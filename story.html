@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — 二人の記録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+
+  section{ position:relative; z-index:2; }
+
+  /* ---- HERO ---- */
+  .hero{
+    min-height:90svh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6vh 6vw;
+    position:relative;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(1px 1px at 20% 30%, rgba(243,237,224,0.35), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgba(243,237,224,0.25), transparent),
+      radial-gradient(1px 1px at 40% 80%, rgba(243,237,224,0.3), transparent),
+      radial-gradient(1px 1px at 85% 20%, rgba(243,237,224,0.25), transparent),
+      radial-gradient(1px 1px at 55% 15%, rgba(243,237,224,0.2), transparent);
+    opacity:0.6;
+    transform:translateY(var(--parallax, 0px));
+    transition:transform 0.05s linear;
+  }
+  .hero-names{
+    font-family:var(--font-jp-serif);
+    font-weight:700;
+    font-size:clamp(2.1rem, 7vw, 4rem);
+    letter-spacing:0.06em;
+    margin:0;
+    position:relative;
+  }
+  .hero-names .x{
+    color:var(--gold);
+    font-family:var(--font-en);
+    font-style:italic;
+    margin:0 0.25em;
+    font-weight:400;
+  }
+  .hero-since{
+    margin-top:1.2em;
+    font-family:var(--font-en);
+    font-style:italic;
+    font-size:clamp(1rem, 2.6vw, 1.35rem);
+    color:var(--gold-soft);
+    letter-spacing:0.12em;
+  }
+  .hero-line{ width:1px; height:56px; background:linear-gradient(var(--gold), transparent); margin-top:2.6em; }
+  .scroll-cue{
+    margin-top:0.8em;
+    font-family:var(--font-en);
+    font-size:0.75rem;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    animation:bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); opacity:0.6; } 50%{ transform:translateY(8px); opacity:1; } }
+  @media (prefers-reduced-motion: reduce){ .scroll-cue{ animation:none; } }
+
+  /* ---- TIMELINE ---- */
+  .timeline-section{ padding:8vh 6vw 6vh; max-width:1100px; margin:0 auto; }
+  .timeline-header{ text-align:center; margin-bottom:8vh; }
+  .timeline{ position:relative; }
+  .timeline::before{
+    content:"";
+    position:absolute; top:0; bottom:0; left:28px; width:1px;
+    background:linear-gradient(var(--line), var(--line) 92%, transparent);
+  }
+  @media (min-width:800px){ .timeline::before{ left:50%; transform:translateX(-50%); } }
+
+  .entry{ position:relative; padding:0 0 9vh 70px; }
+  .entry:last-child{ padding-bottom:0; }
+  @media (min-width:800px){
+    .entry{ width:50%; padding:0 0 9vh 0; }
+    .entry.left{ padding-right:64px; text-align:right; margin-left:0; }
+    .entry.right{ padding-left:64px; margin-left:50%; }
+  }
+
+  .entry .seal{ position:absolute; top:0; left:28px; transform:translateX(-50%); z-index:2; }
+  @media (min-width:800px){
+    .entry.left .seal{ left:auto; right:-19px; transform:none; }
+    .entry.right .seal{ left:-19px; transform:none; }
+  }
+
+  .entry-date{
+    font-family:var(--font-en); font-style:italic; color:var(--gold-soft);
+    font-size:1.05rem; letter-spacing:0.06em; margin:0.2em 0 0.1em;
+  }
+  .entry-title{ font-family:var(--font-jp-serif); font-weight:600; font-size:1.35rem; margin:0 0 0.6em; }
+  .entry-comment{
+    color:var(--text-dim); font-size:0.95rem; margin:0.9em 0 0;
+    position:relative; padding-left:1.1em;
+  }
+  .entry-comment::before{
+    content:"\201C"; font-family:var(--font-en); color:var(--gold);
+    position:absolute; left:0; top:-0.15em; font-size:1.4em;
+  }
+  @media (min-width:800px){
+    .entry.left .entry-comment{ padding-left:0; padding-right:1.1em; }
+    .entry.left .entry-comment::before{ left:auto; right:0; }
+    .entry.left .polaroids{ justify-content:flex-end; }
+  }
+
+  /* ---- カウンター ---- */
+  .counter-section{
+    padding:10vh 6vw; text-align:center;
+    background:var(--ink-alt);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .counter-together{ font-family:var(--font-en); font-style:italic; letter-spacing:0.1em; color:var(--gold-soft); font-size:1.1rem; }
+  .counter-grid{ margin-top:2.2em; display:flex; justify-content:center; gap:clamp(1.2rem, 5vw, 4rem); flex-wrap:wrap; }
+  .counter-num{ font-family:var(--font-en); font-weight:600; font-size:clamp(2.4rem, 8vw, 4.2rem); color:var(--text); line-height:1; }
+  .counter-label{ margin-top:0.5em; font-size:0.72rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--text-dim); }
+  .seal-emblem{
+    margin:2.6em auto 0; width:56px; height:56px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold) 55%, #8a6f3f 100%);
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+    box-shadow:0 8px 20px rgba(0,0,0,0.4);
+  }
+
+  /* ---- 地図 ---- */
+  .map-section{ padding:10vh 6vw; max-width:1000px; margin:0 auto; text-align:center; }
+  .map-wrap{ margin-top:4vh; position:relative; max-width:640px; margin-left:auto; margin-right:auto; }
+  .map-wrap svg{ width:100%; height:auto; display:block; }
+  .map-pin circle{ fill:var(--rose); stroke:var(--paper); stroke-width:2; }
+  .map-pin text{ font-family:var(--font-jp-sans); font-size:11px; fill:var(--text); }
+  .map-pin:hover circle{ fill:var(--gold); }
+  .map-note{ margin-top:1.6em; font-size:0.8rem; color:var(--text-dim); }
+
+  /* ---- ラブレター ---- */
+  .letter-section{ padding:10vh 6vw 12vh; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .envelope{ margin-top:4vh; width:min(320px, 82vw); cursor:pointer; border:none; background:none; padding:0; -webkit-tap-highlight-color:transparent; }
+  .envelope svg{ width:100%; height:auto; display:block; filter:drop-shadow(0 14px 26px rgba(0,0,0,0.5)); }
+  .envelope-hint{ margin-top:1em; font-size:0.78rem; letter-spacing:0.15em; color:var(--text-dim); }
+
+  .letter-paper{
+    max-width:560px; width:100%; background:var(--paper); color:#332c1f;
+    margin-top:3em; padding:clamp(1.8rem, 5vw, 3.2rem); text-align:left;
+    font-family:var(--font-jp-serif); font-size:1.02rem; line-height:2.1;
+    box-shadow:0 24px 60px rgba(0,0,0,0.5); display:none; position:relative;
+  }
+  .letter-paper.is-open{ display:block; animation:unfold 0.7s ease; }
+  @keyframes unfold{ from{ opacity:0; transform:translateY(18px) scale(0.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  @media (prefers-reduced-motion: reduce){ .letter-paper.is-open{ animation:none; } }
+  .letter-sign{ margin-top:2em; text-align:right; font-family:var(--font-en); font-style:italic; color:var(--rose); }
+
+  /* ---- フッター ---- */
+  .footer{ padding:8vh 6vw 6vh; text-align:center; }
+  .footer-anniv{ font-family:var(--font-jp-serif); font-size:clamp(1.3rem, 4vw, 1.8rem); color:var(--gold-soft); }
+  .footer-heart{ color:var(--rose); margin:0 0.3em; }
+  .footer-sub{ margin-top:0.6em; font-family:var(--font-en); font-style:italic; color:var(--text-dim); letter-spacing:0.08em; }
+
+  /* ---- BGMトグル ---- */
+  .bgm-toggle{
+    position:fixed; right:22px; bottom:22px; z-index:10;
+    width:52px; height:52px; border-radius:50%;
+    border:1px solid var(--line); background:rgba(26,30,42,0.85); backdrop-filter:blur(6px);
+    color:var(--gold-soft); font-size:1.15rem;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:transform 0.25s ease, background 0.25s ease;
+  }
+  .bgm-toggle:hover{ transform:scale(1.08); background:rgba(35,40,56,0.95); }
+  .bgm-toggle.is-playing .note{ animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.25); } }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav class="is-active">Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
+</nav>
+
+<section class="hero">
+  <p class="eyebrow">Our Story</p>
+  <h1 class="hero-names">Hiroto<span class="x">×</span>Mituki</h1>
+  <p class="hero-since" id="since-label">Since 2024.10.04</p>
+  <div class="hero-line"></div>
+  <p class="scroll-cue">Scroll ↓</p>
+</section>
+
+<section class="timeline-section">
+  <div class="timeline-header reveal">
+    <p class="eyebrow">Memories</p>
+    <h2 class="section-title">二人の思い出</h2>
+  </div>
+  <div class="timeline" id="timeline"></div>
+</section>
+
+<section class="counter-section">
+  <p class="counter-together reveal">Together for</p>
+  <div class="counter-grid">
+    <div class="reveal"><div class="counter-num" id="c-days">0</div><div class="counter-label">Days</div></div>
+    <div class="reveal"><div class="counter-num" id="c-hours">0</div><div class="counter-label">Hours</div></div>
+    <div class="reveal"><div class="counter-num" id="c-mins">0</div><div class="counter-label">Minutes</div></div>
+  </div>
+  <div class="seal-emblem reveal">♡</div>
+</section>
+
+<section class="map-section">
+  <div class="reveal">
+    <p class="eyebrow">Places</p>
+    <h2 class="section-title">一緒に行った場所</h2>
+  </div>
+  <div class="map-wrap reveal">
+    <svg viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60,120 C120,60 220,50 300,80 C380,50 480,70 540,130
+               C560,170 520,210 470,220 C500,260 460,300 400,290
+               C380,320 320,330 290,300 C240,330 170,310 160,270
+               C100,270 60,230 80,190 C40,180 30,140 60,120 Z"
+            fill="#1c2233" stroke="var(--line)" stroke-width="1"/>
+      <g class="map-pin"><circle cx="300" cy="90" r="7"/><text x="313" y="94">ディズニーランド</text></g>
+      <g class="map-pin"><circle cx="230" cy="150" r="7"/><text x="243" y="154">高尾</text></g>
+      <g class="map-pin"><circle cx="330" cy="220" r="7"/><text x="343" y="224">京都</text></g>
+      <g class="map-pin"><circle cx="150" cy="240" r="7"/><text x="163" y="244">福岡</text></g>
+    </svg>
+  </div>
+  <p class="map-note reveal">※ 実際の地図ではなく、旅の記録を示すイラストです。場所は story.html 内の SVG を編集すると変更できます。</p>
+</section>
+
+<section class="letter-section">
+  <div class="reveal">
+    <p class="eyebrow">A Letter</p>
+    <h2 class="section-title">きみへ</h2>
+  </div>
+  <button class="envelope reveal" id="envelope-btn" aria-expanded="false" aria-controls="letter-paper">
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="312" height="192" rx="6" fill="var(--paper)"/>
+      <path d="M4,10 L160,120 L316,10" fill="none" stroke="#8a6f3f" stroke-width="2"/>
+      <path d="M4,196 L120,90 M316,196 L200,90" stroke="#8a6f3f" stroke-width="1" opacity="0.4"/>
+      <circle cx="160" cy="100" r="16" fill="var(--rose)"/>
+      <text x="160" y="105" text-anchor="middle" font-size="16" fill="var(--paper)">♡</text>
+    </svg>
+  </button>
+  <p class="envelope-hint reveal">— タップして開く —</p>
+  <div class="letter-paper" id="letter-paper">
+    <p>いつも隣で笑っていてくれてありがとう。</p>
+    <p>何気ない日も、特別な日も、全部きみと一緒だったから覚えていられる。</p>
+    <p>これからも、二人らしいペースで、たくさんの「初めて」を重ねていけたら嬉しいです。</p>
+    <p class="letter-sign">— Hiroto</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <p class="footer-anniv reveal">Happy 1st Anniversary<span class="footer-heart">❤</span></p>
+  <p class="footer-sub reveal">To be continued...</p>
+</footer>
+
+<button class="bgm-toggle" id="bgm-toggle" aria-pressed="false" aria-label="BGMを再生する">
+  <span class="note">♪</span>
+</button>
+
+<!-- 実際に曲を流したい場合は下の audio タグの src を自分の音源ファイルに差し替えてください。
+     著作権の都合上、既定では音源を用意していません（フリー音源 or 自作音源を推奨）。 -->
+<audio id="bgm-audio" loop preload="none">
+  <source src="Espresso - Sabrina Carpenter.mp3" type="audio/mpeg">
+</audio>
+
+<script src="assets/auth.js"></script>
+<script src="assets/memories-data.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  // ロックされている（正しい合言葉を経由していない）場合は index.html に戻す
+  protectPage();
+  wireNavLinks();
+
+  // ---- タイムラインを自動生成 ----
+  const timelineEl = document.getElementById('timeline');
+  MEMORIES.forEach((m, i) => {
+    const side = i % 2 === 0 ? 'left' : 'right';
+    const entry = document.createElement('div');
+    entry.className = `entry ${side} reveal`;
+    const displayDate = m.date.replaceAll('-', '.');
+
+    const photosHtml = m.photos.map(src => `
+      <div class="polaroid">
+        <div class="polaroid-photo">
+          ${src ? `<img src="${src}" alt="${m.title}の写真">` : `<span class="cam">📷</span><span>写真を追加</span>`}
+        </div>
+      </div>
+    `).join('');
+
+    entry.innerHTML = `
+      <div class="seal">${m.icon}</div>
+      <p class="entry-date">${displayDate}</p>
+      <h3 class="entry-title">${m.title}</h3>
+      <div class="polaroids">${photosHtml}</div>
+      ${m.comment ? `<p class="entry-comment">${m.comment}</p>` : ''}
+    `;
+    timelineEl.appendChild(entry);
+  });
+
+  // ---- スクロールで浮かび上がるアニメーション ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ---- カウントアップ ----
+  function updateCounter(){
+    const now = new Date();
+    let diff = now - START_DATE;
+    if (diff < 0) diff = 0;
+    document.getElementById('c-days').textContent = Math.floor(diff / 86400000).toLocaleString('ja-JP');
+    document.getElementById('c-hours').textContent = Math.floor(diff / 3600000).toLocaleString('ja-JP');
+    document.getElementById('c-mins').textContent = Math.floor(diff / 60000).toLocaleString('ja-JP');
+  }
+  updateCounter();
+  setInterval(updateCounter, 30000);
+
+  // ---- ラブレターの開閉 ----
+  const envelopeBtn = document.getElementById('envelope-btn');
+  const letterPaper = document.getElementById('letter-paper');
+  envelopeBtn.addEventListener('click', () => {
+    const isOpen = letterPaper.classList.toggle('is-open');
+    envelopeBtn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // ---- BGMトグル ----
+  const bgmBtn = document.getElementById('bgm-toggle');
+  const bgmAudio = document.getElementById('bgm-audio');
+  let isPlaying = false;
+  bgmBtn.addEventListener('click', () => {
+    if (!bgmAudio.querySelector('source')){
+      bgmBtn.title = '音源が設定されていません（コード内の説明を参照）';
+      return;
+    }
+    if (isPlaying){ bgmAudio.pause(); } else { bgmAudio.play().catch(() => {}); }
+    isPlaying = !isPlaying;
+    bgmBtn.classList.toggle('is-playing', isPlaying);
+    bgmBtn.setAttribute('aria-pressed', String(isPlaying));
+  });
+</script>
+</body>
+</html>

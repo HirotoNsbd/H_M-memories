@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — 鍵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .lock-wrap{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6vh 6vw;
+    position:relative;
+    z-index:2;
+  }
+  .lock-seal{
+    width:60px; height:60px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold) 55%, #8a6f3f 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem;
+    box-shadow:0 10px 26px rgba(0,0,0,0.4);
+    margin-bottom:1.6em;
+  }
+  .lock-title{
+    font-family:var(--font-jp-serif);
+    font-weight:700;
+    font-size:clamp(1.6rem, 5vw, 2.2rem);
+    margin:0;
+  }
+  .lock-sub{
+    margin-top:0.6em;
+    color:var(--text-dim);
+    font-size:0.92rem;
+  }
+  .lock-form{
+    margin-top:2.4em;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:1.1em;
+    width:min(320px, 84vw);
+  }
+  .lock-input{
+    width:100%;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line);
+    text-align:center;
+    font-family:var(--font-jp-serif);
+    font-size:1.15rem;
+    color:var(--text);
+    padding:0.5em 0.2em;
+    letter-spacing:0.1em;
+  }
+  .lock-input::placeholder{ color:var(--text-dim); opacity:0.6; }
+  .lock-input:focus{ outline:none; border-color:var(--gold); }
+
+  .lock-error{
+    min-height:1.4em;
+    color:var(--rose);
+    font-size:0.82rem;
+    letter-spacing:0.04em;
+  }
+  .shake{ animation:shake 0.4s ease; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+  @media (prefers-reduced-motion: reduce){ .shake{ animation:none; } }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+
+<div class="lock-wrap">
+  <div class="lock-seal">♡</div>
+  <p class="eyebrow">Our Story</p>
+  <h1 class="lock-title">合言葉を入力してください</h1>
+  <p class="lock-sub">告白した時の最寄り駅</p>
+
+  <form class="lock-form" id="lock-form" autocomplete="off">
+    <input
+      type="text"
+      class="lock-input"
+      id="lock-input"
+      placeholder="合言葉"
+      aria-label="合言葉"
+      required
+    >
+    <button type="submit" class="btn">覗く👀</button>
+    <p class="lock-error" id="lock-error" role="alert"></p>
+  </form>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  const form = document.getElementById('lock-form');
+  const input = document.getElementById('lock-input');
+  const errorEl = document.getElementById('lock-error');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const hash = simpleHash(normalize(input.value));
+
+    if (hash === SECRET_HASH){
+      location.href = 'story.html#key=' + hash;
+    } else {
+      errorEl.textContent = '合言葉が違うみたい…もう一度やる？';
+      form.classList.remove('shake');
+      // reflow でアニメーションを再トリガー
+      void form.offsetWidth;
+      form.classList.add('shake');
+      input.value = '';
+      input.focus();
+    }
+  });
+</script>
+</body>
+</html>

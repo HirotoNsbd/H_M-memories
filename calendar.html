@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — カレンダー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .cal-section{
+    padding:8vh 6vw 12vh;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .cal-header{ text-align:center; margin-bottom:6vh; }
+
+  .cal-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:1.6em;
+  }
+  .cal-nav-btn{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--gold-soft);
+    width:38px; height:38px;
+    border-radius:50%;
+    font-size:1rem;
+    cursor:pointer;
+    transition:background 0.2s ease;
+  }
+  .cal-nav-btn:hover{ background:var(--ink-soft); }
+
+  .cal-month-label{
+    font-family:var(--font-jp-serif);
+    font-weight:600;
+    font-size:1.3rem;
+    letter-spacing:0.05em;
+  }
+  .cal-month-label .en{
+    display:block;
+    font-family:var(--font-en);
+    font-style:italic;
+    font-weight:400;
+    color:var(--text-dim);
+    font-size:0.8rem;
+    margin-top:0.2em;
+    letter-spacing:0.15em;
+  }
+
+  .cal-grid{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:6px;
+  }
+  .cal-dow{
+    text-align:center;
+    font-family:var(--font-en);
+    font-size:0.72rem;
+    letter-spacing:0.1em;
+    color:var(--text-dim);
+    padding-bottom:8px;
+  }
+  .cal-cell{
+    aspect-ratio:1/1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    border-radius:4px;
+    color:var(--text-dim);
+    font-family:var(--font-en);
+    font-size:0.92rem;
+  }
+  .cal-cell.empty{ visibility:hidden; }
+  .cal-cell.has-memory{
+    color:var(--text);
+    cursor:pointer;
+    background:var(--ink-soft);
+    border:1px solid transparent;
+    transition:transform 0.2s ease, border-color 0.2s ease;
+  }
+  .cal-cell.has-memory:hover,
+  .cal-cell.has-memory:focus-visible{
+    transform:translateY(-2px);
+    border-color:var(--gold);
+  }
+  .cal-cell .heart{
+    position:absolute;
+    top:3px;
+    font-size:0.6rem;
+    color:var(--rose);
+    animation:heart-pulse 2.6s ease-in-out infinite;
+  }
+  .cal-cell .day-num{ margin-top:6px; }
+  .cal-cell.has-memory:active{ transform:scale(0.93); }
+  @keyframes heart-pulse{
+    0%,100%{ transform:scale(1); opacity:0.85; }
+    50%{ transform:scale(1.2); opacity:1; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .cal-cell .heart{ animation:none; }
+  }
+
+  .cal-legend{
+    margin-top:3em;
+    text-align:center;
+    color:var(--text-dim);
+    font-size:0.82rem;
+  }
+  .cal-legend .heart{ color:var(--rose); }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav class="is-active">Calendar</a>
+  <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
+</nav>
+
+<section class="cal-section">
+  <div class="cal-header reveal">
+    <p class="eyebrow">Calendar</p>
+    <h2 class="section-title">記念日カレンダー</h2>
+  </div>
+
+  <div class="cal-nav reveal">
+    <button class="cal-nav-btn" id="cal-prev" aria-label="前の月">←</button>
+    <p class="cal-month-label" id="cal-month-label"></p>
+    <button class="cal-nav-btn" id="cal-next" aria-label="次の月">→</button>
+  </div>
+
+  <div class="cal-grid" id="cal-grid"></div>
+
+  <p class="cal-legend reveal"><span class="heart">♥</span> の付いた日をタップすると、その日の思い出が見られます。</p>
+</section>
+
+<!-- 詳細モーダル -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-close" id="modal-close" aria-label="閉じる">✕</button>
+    <div class="seal" id="modal-seal"></div>
+    <p class="modal-date" id="modal-date"></p>
+    <h3 class="modal-title" id="modal-title"></h3>
+    <div class="polaroids" id="modal-photos"></div>
+    <p class="modal-comment" id="modal-comment"></p>
+  </div>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/memories-data.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+
+  const memoryMap = buildMemoryMap();
+
+  // 表示開始月：最初の思い出があった月
+  const firstMemoryDate = new Date(MEMORIES[0].date + 'T00:00:00');
+  let viewYear = firstMemoryDate.getFullYear();
+  let viewMonth = firstMemoryDate.getMonth(); // 0-11
+
+  const grid = document.getElementById('cal-grid');
+  const monthLabel = document.getElementById('cal-month-label');
+  const DOW = ['日','月','火','水','木','金','土'];
+  const MONTH_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function pad(n){ return String(n).padStart(2, '0'); }
+
+  function renderCalendar(){
+    grid.innerHTML = '';
+    monthLabel.innerHTML = `${viewYear}年 ${viewMonth + 1}月<span class="en">${MONTH_EN[viewMonth]} ${viewYear}</span>`;
+
+    DOW.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDayOfWeek; i++){
+      const filler = document.createElement('div');
+      filler.className = 'cal-cell empty';
+      grid.appendChild(filler);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++){
+      const dateStr = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
+      const memory = memoryMap.get(dateStr);
+
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (memory ? ' has-memory' : '');
+      cell.innerHTML = `${memory ? '<span class="heart">♥</span>' : ''}<span class="day-num">${day}</span>`;
+
+      if (memory){
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('role', 'button');
+        cell.setAttribute('aria-label', `${dateStr} ${memory.title}`);
+        cell.addEventListener('click', () => openModal(memory));
+        cell.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openModal(memory); }
+        });
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    viewMonth--;
+    if (viewMonth < 0){ viewMonth = 11; viewYear--; }
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    viewMonth++;
+    if (viewMonth > 11){ viewMonth = 0; viewYear++; }
+    renderCalendar();
+  });
+
+  // ---- モーダル ----
+  const backdrop = document.getElementById('modal-backdrop');
+  const modalSeal = document.getElementById('modal-seal');
+  const modalDate = document.getElementById('modal-date');
+  const modalTitle = document.getElementById('modal-title');
+  const modalPhotos = document.getElementById('modal-photos');
+  const modalComment = document.getElementById('modal-comment');
+
+  function openModal(memory){
+    modalSeal.textContent = memory.icon;
+    modalDate.textContent = memory.date.replaceAll('-', '.');
+    modalTitle.textContent = memory.title;
+    modalPhotos.innerHTML = memory.photos.map(src => `
+      <div class="polaroid">
+        <div class="polaroid-photo">
+          ${src ? `<img src="${src}" alt="${memory.title}の写真">` : `<span class="cam">📷</span><span>写真を追加</span>`}
+        </div>
+      </div>
+    `).join('');
+    modalComment.textContent = memory.comment || '';
+    modalComment.style.display = memory.comment ? 'block' : 'none';
+    backdrop.classList.add('is-open');
+  }
+  function closeModal(){ backdrop.classList.remove('is-open'); }
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // ---- reveal ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  renderCalendar();
+</script>
+</body>
+</html>
