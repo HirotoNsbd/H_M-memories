@@ -123,6 +123,7 @@
 <nav class="site-nav">
   <a href="story.html" data-nav>Story</a>
   <a href="calendar.html" data-nav class="is-active">Calendar</a>
+  <a href="quiz.html" data-nav>Quiz</a>
   <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
 </nav>
 
@@ -162,12 +163,9 @@
   protectPage();
   wireNavLinks();
 
-  const memoryMap = buildMemoryMap();
-
-  // 表示開始月：最初の思い出があった月
-  const firstMemoryDate = new Date(MEMORIES[0].date + 'T00:00:00');
-  let viewYear = firstMemoryDate.getFullYear();
-  let viewMonth = firstMemoryDate.getMonth(); // 0-11
+  let memoryMap;
+  let viewYear;
+  let viewMonth;
 
   const grid = document.getElementById('cal-grid');
   const monthLabel = document.getElementById('cal-month-label');
@@ -265,7 +263,15 @@
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  renderCalendar();
+  (async () => {
+    // content/memories.json を読み込む（管理画面から投稿された内容を反映）
+    await loadMemories();
+    memoryMap = buildMemoryMap();
+    const firstMemoryDate = new Date(MEMORIES[0].date + 'T00:00:00');
+    viewYear = firstMemoryDate.getFullYear();
+    viewMonth = firstMemoryDate.getMonth();
+    renderCalendar();
+  })();
 </script>
 </body>
 </html>

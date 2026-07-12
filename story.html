@@ -188,13 +188,14 @@
 <nav class="site-nav">
   <a href="story.html" data-nav class="is-active">Story</a>
   <a href="calendar.html" data-nav>Calendar</a>
+  <a href="quiz.html" data-nav>Quiz</a>
   <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
 </nav>
 
 <section class="hero">
   <p class="eyebrow">Our Story</p>
-  <h1 class="hero-names">Hiroto<span class="x">×</span>Mituki</h1>
-  <p class="hero-since" id="since-label">Since 2024.10.04</p>
+  <h1 class="hero-names">Hiroto<span class="x">×</span>○○</h1>
+  <p class="hero-since" id="since-label">Since 2025.10.04</p>
   <div class="hero-line"></div>
   <p class="scroll-cue">Scroll ↓</p>
 </section>
@@ -273,7 +274,7 @@
 <!-- 実際に曲を流したい場合は下の audio タグの src を自分の音源ファイルに差し替えてください。
      著作権の都合上、既定では音源を用意していません（フリー音源 or 自作音源を推奨）。 -->
 <audio id="bgm-audio" loop preload="none">
-  <source src="Espresso - Sabrina Carpenter.mp3" type="audio/mpeg">
+  <!-- <source src="your-song.mp3" type="audio/mpeg"> -->
 </audio>
 
 <script src="assets/auth.js"></script>
@@ -284,54 +285,59 @@
   protectPage();
   wireNavLinks();
 
-  // ---- タイムラインを自動生成 ----
-  const timelineEl = document.getElementById('timeline');
-  MEMORIES.forEach((m, i) => {
-    const side = i % 2 === 0 ? 'left' : 'right';
-    const entry = document.createElement('div');
-    entry.className = `entry ${side} reveal`;
-    const displayDate = m.date.replaceAll('-', '.');
+  (async () => {
+    // content/memories.json を読み込む（管理画面から投稿された内容を反映）
+    await loadMemories();
 
-    const photosHtml = m.photos.map(src => `
-      <div class="polaroid">
-        <div class="polaroid-photo">
-          ${src ? `<img src="${src}" alt="${m.title}の写真">` : `<span class="cam">📷</span><span>写真を追加</span>`}
+    // ---- タイムラインを自動生成 ----
+    const timelineEl = document.getElementById('timeline');
+    MEMORIES.forEach((m, i) => {
+      const side = i % 2 === 0 ? 'left' : 'right';
+      const entry = document.createElement('div');
+      entry.className = `entry ${side} reveal`;
+      const displayDate = m.date.replaceAll('-', '.');
+
+      const photosHtml = m.photos.map(src => `
+        <div class="polaroid">
+          <div class="polaroid-photo">
+            ${src ? `<img src="${src}" alt="${m.title}の写真">` : `<span class="cam">📷</span><span>写真を追加</span>`}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
 
-    entry.innerHTML = `
-      <div class="seal">${m.icon}</div>
-      <p class="entry-date">${displayDate}</p>
-      <h3 class="entry-title">${m.title}</h3>
-      <div class="polaroids">${photosHtml}</div>
-      ${m.comment ? `<p class="entry-comment">${m.comment}</p>` : ''}
-    `;
-    timelineEl.appendChild(entry);
-  });
-
-  // ---- スクロールで浮かび上がるアニメーション ----
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting){
-        entry.target.classList.add('is-visible');
-        io.unobserve(entry.target);
-      }
+      entry.innerHTML = `
+        <div class="seal">${m.icon}</div>
+        <p class="entry-date">${displayDate}</p>
+        <h3 class="entry-title">${m.title}</h3>
+        <div class="polaroids">${photosHtml}</div>
+        ${m.comment ? `<p class="entry-comment">${m.comment}</p>` : ''}
+      `;
+      timelineEl.appendChild(entry);
     });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  // ---- カウントアップ ----
-  function updateCounter(){
-    const now = new Date();
-    let diff = now - START_DATE;
-    if (diff < 0) diff = 0;
-    document.getElementById('c-days').textContent = Math.floor(diff / 86400000).toLocaleString('ja-JP');
-    document.getElementById('c-hours').textContent = Math.floor(diff / 3600000).toLocaleString('ja-JP');
-    document.getElementById('c-mins').textContent = Math.floor(diff / 60000).toLocaleString('ja-JP');
-  }
-  updateCounter();
-  setInterval(updateCounter, 30000);
+    // ---- スクロールで浮かび上がるアニメーション ----
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // ---- カウントアップ ----
+    function updateCounter(){
+      const now = new Date();
+      let diff = now - START_DATE;
+      if (diff < 0) diff = 0;
+      document.getElementById('c-days').textContent = Math.floor(diff / 86400000).toLocaleString('ja-JP');
+      document.getElementById('c-hours').textContent = Math.floor(diff / 3600000).toLocaleString('ja-JP');
+      document.getElementById('c-mins').textContent = Math.floor(diff / 60000).toLocaleString('ja-JP');
+    }
+    updateCounter();
+    setInterval(updateCounter, 30000);
+  })();
 
   // ---- ラブレターの開閉 ----
   const envelopeBtn = document.getElementById('envelope-btn');

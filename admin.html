@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — 思い出を追加</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .admin-section{
+    padding:8vh 6vw 12vh;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .admin-header{ text-align:center; margin-bottom:4vh; }
+
+  .field{ margin-bottom:1.6em; text-align:left; }
+  .field label{
+    display:block;
+    font-size:0.82rem;
+    letter-spacing:0.06em;
+    color:var(--text-dim);
+    margin-bottom:0.5em;
+  }
+  .field input[type="text"],
+  .field input[type="date"],
+  .field textarea{
+    width:100%;
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:var(--font-jp-sans);
+    font-size:0.95rem;
+    padding:12px 14px;
+    border-radius:4px;
+  }
+  .field input:focus, .field textarea:focus{ outline:none; border-color:var(--gold); }
+  .field textarea{ min-height:90px; resize:vertical; }
+
+  .icon-picker{ display:flex; gap:8px; flex-wrap:wrap; margin-top:0.6em; }
+  .icon-btn{
+    width:40px; height:40px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--ink-soft);
+    font-size:1.1rem;
+    cursor:pointer;
+  }
+  .icon-btn.is-selected{ border-color:var(--gold); background:var(--ink-alt); }
+
+  .file-drop{
+    border:1px dashed var(--line);
+    border-radius:6px;
+    padding:20px;
+    text-align:center;
+    color:var(--text-dim);
+    font-size:0.88rem;
+    cursor:pointer;
+  }
+  .file-drop:hover{ border-color:var(--gold); }
+  .file-drop input{ display:none; }
+
+  .preview-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:12px;
+  }
+  .preview-item{
+    width:72px; height:72px;
+    border-radius:4px;
+    overflow:hidden;
+    position:relative;
+  }
+  .preview-item img{ width:100%; height:100%; object-fit:cover; }
+  .preview-remove{
+    position:absolute; top:2px; right:2px;
+    width:20px; height:20px;
+    border-radius:50%;
+    border:none;
+    background:rgba(10,11,16,0.75);
+    color:var(--text);
+    font-size:0.75rem;
+    cursor:pointer;
+  }
+
+  .submit-row{ margin-top:2.4em; text-align:center; }
+  .status-msg{
+    margin-top:1.2em;
+    font-size:0.88rem;
+    text-align:center;
+    min-height:1.4em;
+  }
+  .status-msg.ok{ color:var(--gold-soft); }
+  .status-msg.err{ color:var(--rose); }
+
+  .config-note{
+    margin-top:3em;
+    font-size:0.78rem;
+    color:var(--text-dim);
+    text-align:center;
+    line-height:1.9;
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="quiz.html" data-nav>Quiz</a>
+  <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
+</nav>
+
+<section class="admin-section">
+  <div class="admin-header reveal">
+    <p class="eyebrow">Add a memory</p>
+    <h2 class="section-title">思い出を追加</h2>
+  </div>
+
+  <form id="admin-form">
+    <div class="field">
+      <label for="f-date">日付</label>
+      <input type="date" id="f-date" required>
+    </div>
+
+    <div class="field">
+      <label>アイコン</label>
+      <div class="icon-picker" id="icon-picker">
+        <button type="button" class="icon-btn is-selected" data-icon="🎉">🎉</button>
+        <button type="button" class="icon-btn" data-icon="🎄">🎄</button>
+        <button type="button" class="icon-btn" data-icon="🏰">🏰</button>
+        <button type="button" class="icon-btn" data-icon="💯">💯</button>
+        <button type="button" class="icon-btn" data-icon="🍽️">🍽️</button>
+        <button type="button" class="icon-btn" data-icon="🌸">🌸</button>
+        <button type="button" class="icon-btn" data-icon="✈️">✈️</button>
+        <button type="button" class="icon-btn" data-icon="🎂">🎂</button>
+        <button type="button" class="icon-btn" data-icon="❤️">❤️</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="f-title">タイトル</label>
+      <input type="text" id="f-title" placeholder="例：はじめての旅行" required>
+    </div>
+
+    <div class="field">
+      <label for="f-comment">コメント（任意）</label>
+      <textarea id="f-comment" placeholder="一言メッセージを書いてください"></textarea>
+    </div>
+
+    <div class="field">
+      <label>写真（複数選択できます・任意）</label>
+      <label class="file-drop">
+        <input type="file" id="f-photos" accept="image/*" multiple>
+        📷 タップして写真を選ぶ
+      </label>
+      <div class="preview-grid" id="preview-grid"></div>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn" id="submit-btn">この思い出を公開する</button>
+      <p class="status-msg" id="status-msg"></p>
+    </div>
+  </form>
+
+  <p class="config-note">
+    ※ このページから投稿すると、裏側のプログラムが自動的にGitHubへ保存し、
+    数分後にサイトへ反映されます。<br>
+    初回セットアップが済んでいない場合は SETUP.md を確認してください。
+  </p>
+</section>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+
+  /* ================================================================
+     ▼ ここに、セットアップ後に発行される Worker の URL を入れてください
+     （SETUP.md の手順で Cloudflare Workers にデプロイした後のURLです）
+     例: const WORKER_URL = 'https://memory-site-admin.your-name.workers.dev';
+     ================================================================ */
+  const WORKER_URL = 'https://REPLACE-ME.workers.dev';
+
+  const iconPicker = document.getElementById('icon-picker');
+  let selectedIcon = '🎉';
+  iconPicker.querySelectorAll('.icon-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      iconPicker.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      selectedIcon = btn.dataset.icon;
+    });
+  });
+
+  const photosInput = document.getElementById('f-photos');
+  const previewGrid = document.getElementById('preview-grid');
+  let selectedFiles = [];
+
+  photosInput.addEventListener('change', () => {
+    selectedFiles = Array.from(photosInput.files);
+    renderPreviews();
+  });
+
+  function renderPreviews(){
+    previewGrid.innerHTML = '';
+    selectedFiles.forEach((file, i) => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'preview-remove';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
+        selectedFiles.splice(i, 1);
+        renderPreviews();
+      });
+      item.appendChild(img);
+      item.appendChild(removeBtn);
+      previewGrid.appendChild(item);
+    });
+  }
+
+  function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const form = document.getElementById('admin-form');
+  const statusMsg = document.getElementById('status-msg');
+  const submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (WORKER_URL.includes('REPLACE-ME')){
+      statusMsg.textContent = 'まだ裏方プログラムのURLが設定されていません（SETUP.mdを確認してください）';
+      statusMsg.className = 'status-msg err';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    statusMsg.textContent = '公開しています…';
+    statusMsg.className = 'status-msg';
+
+    try {
+      const photos = await Promise.all(selectedFiles.map(async (file) => ({
+        filename: file.name,
+        contentBase64: await fileToBase64(file)
+      })));
+
+      const payload = {
+        secret: SECRET_HASH, // サイトの合言葉ハッシュを、簡易的な合言葉として裏方プログラムにも渡す
+        date: document.getElementById('f-date').value,
+        icon: selectedIcon,
+        title: document.getElementById('f-title').value,
+        comment: document.getElementById('f-comment').value,
+        photos
+      };
+
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok){
+        const errText = await res.text();
+        throw new Error(errText || ('HTTP ' + res.status));
+      }
+
+      statusMsg.textContent = '公開しました！数分後にサイトに反映されます 🎉';
+      statusMsg.className = 'status-msg ok';
+      form.reset();
+      selectedFiles = [];
+      renderPreviews();
+      iconPicker.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('is-selected'));
+      iconPicker.querySelector('.icon-btn').classList.add('is-selected');
+      selectedIcon = iconPicker.querySelector('.icon-btn').dataset.icon;
+    } catch (err) {
+      statusMsg.textContent = '送信に失敗しました：' + err.message;
+      statusMsg.className = 'status-msg err';
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
