@@ -29,7 +29,73 @@ body{
   color:var(--text);
   font-family:var(--font-jp-sans);
   line-height:1.8;
+  transition:background 0.7s ease, color 0.7s ease;
 }
+
+/* ---- 昼モード（サイト全体共通） ----
+   body に .day-mode が付くと、暖かいアイボリー×ゴールドの配色に切り替わります。
+   全ページが同じCSS変数を参照しているため、ここ1箇所の変更で全体に反映されます。 */
+body.day-mode{
+  --ink:        #faf5ea;
+  --ink-alt:    #f3ead6;
+  --ink-soft:   #ffffff;
+  --gold:       #c9a96a;
+  --gold-soft:  #a9823f;
+  --rose:       #c07a72;
+  --text:       #3c3324;
+  --text-dim:   #8a7c63;
+  --line:       rgba(169,130,63,0.3);
+}
+
+/* ---- 昼夜トグルボタン（ナビ内） ---- */
+.day-night-toggle{
+  display:flex; align-items:center; gap:8px;
+  background:var(--ink-soft); border:1px solid var(--line);
+  border-radius:99px; padding:5px 6px; cursor:pointer;
+  transition:background 0.7s ease, border-color 0.7s ease;
+}
+.day-night-toggle .icon{ font-size:0.9rem; width:18px; text-align:center; }
+.day-night-toggle .track{
+  width:34px; height:19px; border-radius:99px; background:var(--line);
+  position:relative; transition:background 0.4s ease;
+}
+.day-night-toggle .thumb{
+  position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%;
+  background:var(--gold); transition:transform 0.4s cubic-bezier(.22,.68,.36,1);
+}
+body.day-mode .day-night-toggle .thumb{ transform:translateX(15px); }
+
+/* ---- 雨の日モード（サイト全体共通） ---- */
+.rain-layer{
+  position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden;
+  opacity:0; transition:opacity 1s ease;
+}
+.rain-layer.is-on{ opacity:1; }
+.rain-layer .drop{
+  position:absolute; top:-6%;
+  width:1px;
+  background:linear-gradient(to bottom, transparent, rgba(227,207,160,0.35), transparent);
+  animation-name:rain-fall; animation-timing-function:linear; animation-iteration-count:infinite;
+  will-change:transform, opacity;
+}
+@keyframes rain-fall{
+  0%{ transform:translateY(0); opacity:0; }
+  10%{ opacity:0.5; }
+  95%{ opacity:0.4; }
+  100%{ transform:translateY(112vh); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .rain-layer .drop{ animation:none; display:none; }
+}
+
+.rain-toggle{
+  display:flex; align-items:center; justify-content:center;
+  background:var(--ink-soft); border:1px solid var(--line);
+  border-radius:99px; width:30px; height:30px; cursor:pointer;
+  font-size:0.9rem; transition:background 0.3s ease, border-color 0.3s ease;
+}
+.rain-toggle.is-on{ border-color:var(--gold); }
+.rain-toggle:hover{ border-color:var(--gold); }
 
 ::selection{ background:var(--gold); color:var(--ink); }
 a{ color:inherit; }
@@ -107,11 +173,22 @@ a:focus-visible, button:focus-visible, input:focus-visible{
 .site-nav{
   position:sticky; top:0; z-index:20;
   display:flex; align-items:center; justify-content:center;
-  gap:clamp(1.2rem, 4vw, 2.4rem);
-  padding:16px 6vw;
+  flex-wrap:wrap;
+  gap:clamp(0.8rem, 3vw, 2.4rem);
+  padding:10px 6vw;
   background:rgba(18,20,28,0.82);
   backdrop-filter:blur(8px);
   border-bottom:1px solid var(--line);
+}
+@media (max-width:600px){
+  .site-nav{ gap:0.5rem 0.8rem; padding:8px 4vw; }
+  .site-nav a{ font-size:0.82rem; padding:2px 1px; }
+  .day-night-toggle{ padding:4px 5px; gap:5px; }
+  .day-night-toggle .icon{ font-size:0.75rem; width:14px; }
+  .day-night-toggle .track{ width:28px; height:16px; }
+  .day-night-toggle .thumb{ width:12px; height:12px; }
+  body.day-mode .day-night-toggle .thumb{ transform:translateX(12px); }
+  .rain-toggle{ width:26px; height:26px; font-size:0.78rem; }
 }
 .site-nav a{
   font-family:var(--font-en);
@@ -129,10 +206,28 @@ a:focus-visible, button:focus-visible, input:focus-visible{
   border-color:var(--gold);
 }
 .site-nav a.lock-link{
-  margin-left:auto;
   font-family:var(--font-jp-sans);
   font-size:0.85rem;
 }
+
+/* ---- ページ下部の「思い出を追加」リンク ---- */
+.footer-add-link{
+  text-align:center;
+  padding:2vh 6vw 8vh;
+}
+.footer-add-link a{
+  display:inline-block;
+  font-family:var(--font-en);
+  font-style:italic;
+  font-size:0.88rem;
+  letter-spacing:0.06em;
+  color:var(--text-dim);
+  text-decoration:none;
+  padding:6px 4px;
+  border-bottom:1px solid transparent;
+  transition:color 0.2s ease, border-color 0.2s ease;
+}
+.footer-add-link a:hover{ color:var(--gold-soft); border-color:var(--gold); }
 
 /* ---- ポラロイド（story / calendar モーダル共通） ---- */
 .polaroids{

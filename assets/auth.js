@@ -1,13 +1,14 @@
 /* ==================================================================
    合言葉ロック（二人だけの遊び心の鍵です）
    ------------------------------------------------------------------
-   ※ 注意：これは本格的なセキュリティではありません。
-   このファイルの中身を見れば合言葉自体も分かってしまう、
-   あくまで「気軽な二人だけの鍵」として使ってください。
+   ※ これは本格的なセキュリティではなく、気休め程度の鍵です。
+   このファイルの中を見れば合言葉自体も分かってしまいますが、
+   「なんとなく他の人には見せたくない」を満たすためのものとして
+   割り切って使ってください。
 
    ▼ 合言葉を変更したいときは、下の SECRET_WORD を書き換えてください。
    ================================================================== */
-const SECRET_WORD = '国分寺駅'; // ← ここを二人の合言葉に変更してください
+const SECRET_WORD = 'ことば'; // ← ここを二人の合言葉に変更してください
 
 function normalize(str){
   return str.trim().toLowerCase();
@@ -32,19 +33,20 @@ function isUnlocked(){
   return currentKey() === SECRET_HASH;
 }
 
-// このページが未解錠なら鍵ページへ戻す（story.html / calendar.html の先頭で呼ぶ）
+// このページが未解錠なら鍵ページへ戻す（story.html / calendar.html などの先頭で呼ぶ）
 function protectPage(){
   if (!isUnlocked()){
     location.href = 'index.html';
   }
 }
 
-// ページ内のナビリンク（data-nav 属性）に、現在の鍵を引き継がせる
+// ページ内のナビリンク（data-nav 属性）に、現在のハッシュ全体を引き継がせる
+// （鍵だけでなく、雨判定のキャッシュなど他の情報も一緒に引き継がれます）
 function wireNavLinks(){
-  const key = currentKey();
+  const currentHash = location.hash.slice(1);
   document.querySelectorAll('[data-nav]').forEach(a => {
     const url = new URL(a.getAttribute('href'), location.href);
-    url.hash = 'key=' + key;
+    url.hash = currentHash;
     a.setAttribute('href', url.pathname + url.hash);
   });
 }
