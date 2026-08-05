@@ -184,12 +184,16 @@
 
 <div class="grain"></div>
 <div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
 
 <nav class="site-nav">
   <a href="story.html" data-nav class="is-active">Story</a>
   <a href="calendar.html" data-nav>Calendar</a>
-  <a href="quiz.html" data-nav>Quiz</a>
-  <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
 </nav>
 
 <section class="hero">
@@ -267,6 +271,10 @@
   <p class="footer-sub reveal">To be continued...</p>
 </footer>
 
+<div class="footer-add-link reveal">
+  <a href="admin.html" data-nav>＋ 思い出を追加する</a>
+</div>
+
 <button class="bgm-toggle" id="bgm-toggle" aria-pressed="false" aria-label="BGMを再生する">
   <span class="note">♪</span>
 </button>
@@ -289,9 +297,10 @@
     // content/memories.json を読み込む（管理画面から投稿された内容を反映）
     await loadMemories();
 
-    // ---- タイムラインを自動生成 ----
+    // ---- タイムラインを自動生成（showInStoryがfalseのものは除外）----
     const timelineEl = document.getElementById('timeline');
-    MEMORIES.forEach((m, i) => {
+    const storyMemories = MEMORIES.filter(m => m.showInStory !== false);
+    storyMemories.forEach((m, i) => {
       const side = i % 2 === 0 ? 'left' : 'right';
       const entry = document.createElement('div');
       entry.className = `entry ${side} reveal`;

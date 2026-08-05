@@ -112,12 +112,16 @@
 
 <div class="grain"></div>
 <div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
 
 <nav class="site-nav">
   <a href="story.html" data-nav>Story</a>
   <a href="calendar.html" data-nav>Calendar</a>
-  <a href="quiz.html" data-nav class="is-active">Quiz</a>
-  <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
 </nav>
 
 <section class="quiz-section">
@@ -128,6 +132,10 @@
 
   <div class="quiz-card" id="quiz-card"></div>
 </section>
+
+<div class="footer-add-link reveal">
+  <a href="admin.html" data-nav>＋ 思い出を追加する</a>
+</div>
 
 <script src="assets/auth.js"></script>
 <script src="assets/quiz-data.js"></script>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — Bucket List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .bucket-section{ padding:4vh 6vw 12vh; max-width:600px; margin:0 auto; text-align:center; position:relative; z-index:2; }
+
+  .sync-note{
+    margin-top:1em; font-size:0.78rem; color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+  }
+  .sync-note button{
+    font-family:var(--font-jp-sans); font-size:0.76rem; color:var(--text-dim);
+    background:none; border:1px solid var(--line); padding:5px 12px; border-radius:99px; cursor:pointer;
+  }
+  .sync-note button:hover{ color:var(--gold-soft); border-color:var(--gold); }
+  .sync-dot{ width:7px; height:7px; border-radius:50%; background:var(--text-dim); display:inline-block; }
+  .sync-dot.is-live{ background:#8fc79a; }
+
+  .progress-wrap{ margin:2em auto 0; max-width:360px; }
+  .progress-num{ font-family:var(--font-en); font-weight:600; font-size:clamp(2.2rem, 8vw, 3.2rem); color:var(--gold-soft); line-height:1; }
+  .progress-num span{ font-size:0.42em; color:var(--text-dim); font-style:italic; }
+  .progress-bar-track{ margin-top:0.8em; height:8px; border-radius:99px; background:var(--ink-soft); overflow:hidden; border:1px solid var(--line); }
+  .progress-bar-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg, var(--rose), var(--gold-soft)); width:0%; transition:width 0.6s cubic-bezier(.22,.68,.36,1); }
+  .progress-remain{ margin-top:0.7em; font-size:0.82rem; color:var(--text-dim); }
+
+  .add-row{ margin-top:2.6em; display:flex; gap:10px; max-width:420px; margin-left:auto; margin-right:auto; }
+  .add-row input{
+    flex:1; background:var(--ink-soft); border:1px solid var(--line);
+    color:var(--text); font-family:var(--font-jp-sans); font-size:0.92rem;
+    padding:12px 14px; border-radius:4px;
+  }
+  .add-row input:focus{ outline:none; border-color:var(--gold); }
+  .add-row button{
+    font-family:var(--font-en); font-style:italic; color:var(--ink);
+    background:linear-gradient(var(--gold-soft), var(--gold));
+    border:none; padding:0 20px; border-radius:4px; cursor:pointer; font-size:0.92rem;
+  }
+  .add-row button:disabled{ opacity:0.5; cursor:default; }
+
+  .bucket-list{ margin-top:2.2em; text-align:left; display:flex; flex-direction:column; gap:10px; }
+  .bucket-item{
+    display:flex; align-items:center; gap:14px;
+    background:var(--ink-soft); border:1px solid var(--line);
+    border-radius:8px; padding:14px 16px;
+    transition:opacity 0.3s ease, transform 0.3s ease;
+  }
+  .bucket-check{
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    border:1px solid var(--gold); background:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:var(--ink);
+    font-size:0.8rem; transition:background 0.25s ease, transform 0.2s ease;
+  }
+  .bucket-item.is-done .bucket-check{ background:linear-gradient(var(--gold-soft), var(--gold)); }
+  .bucket-item.is-done .bucket-check::after{ content:'✓'; }
+  .bucket-check:active{ transform:scale(0.88); }
+
+  .bucket-label{ flex:1; font-size:0.95rem; color:var(--text); transition:color 0.3s ease; }
+  .bucket-item.is-done .bucket-label{ color:var(--text-dim); text-decoration:line-through; }
+
+  .bucket-remove{ background:none; border:none; color:var(--text-dim); font-size:0.9rem; cursor:pointer; opacity:0.6; flex-shrink:0; }
+  .bucket-remove:hover{ opacity:1; color:var(--rose); }
+
+  .bucket-item.just-done{ animation:done-pop 0.5s ease; }
+  @keyframes done-pop{ 0%{ transform:scale(1); } 30%{ transform:scale(1.03); background:rgba(201,169,106,0.16); } 100%{ transform:scale(1); } }
+  @media (prefers-reduced-motion: reduce){ .bucket-item.just-done{ animation:none; } }
+
+  .confetti-burst{ position:fixed; z-index:30; pointer-events:none; }
+  .confetti-piece{ position:absolute; font-size:0.9rem; animation:confetti-fly 0.9s ease-out forwards; }
+  @keyframes confetti-fly{ 0%{ transform:translate(0,0) scale(0.6); opacity:1; } 100%{ transform:translate(var(--cx), var(--cy)) scale(1); opacity:0; } }
+  @media (prefers-reduced-motion: reduce){ .confetti-piece{ animation:none; display:none; } }
+
+  .empty-msg{ margin-top:2em; color:var(--text-dim); font-size:0.88rem; }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
+</nav>
+
+<section class="bucket-section">
+  <p class="eyebrow reveal">Bucket List</p>
+  <h2 class="section-title reveal">やりたいことリスト</h2>
+
+  <p class="sync-note reveal">
+    <span class="sync-dot" id="sync-dot"></span>
+    <span id="sync-status">共有先の設定を確認中…</span>
+    <button id="refresh-btn">🔄 最新の状態に更新</button>
+  </p>
+
+  <div class="progress-wrap reveal">
+    <p class="progress-num" id="progress-num">0<span>%</span></p>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <p class="progress-remain" id="progress-remain"></p>
+  </div>
+
+  <div class="add-row reveal">
+    <input type="text" id="new-item-input" placeholder="やりたいことを入力…">
+    <button id="add-item-btn">追加</button>
+  </div>
+
+  <div class="bucket-list" id="bucket-list"></div>
+</section>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+
+  /* ================================================================
+     裏方プログラム（Cloudflare Worker）のURL。
+     admin.html / capsule.htmlと同じWorkerのURLを設定してください。
+     未設定のままだと、この端末の中だけで完結するローカルモードで動きます。
+     ================================================================ */
+  const WORKER_URL = 'https://REPLACE-ME.workers.dev';
+  const SYNC_ENABLED = !WORKER_URL.includes('REPLACE-ME');
+
+  let items = [];
+
+  const listEl = document.getElementById('bucket-list');
+  const progressNum = document.getElementById('progress-num');
+  const progressFill = document.getElementById('progress-fill');
+  const progressRemain = document.getElementById('progress-remain');
+  const syncStatus = document.getElementById('sync-status');
+  const syncDot = document.getElementById('sync-dot');
+
+  function setSyncStatus(text, live){
+    syncStatus.textContent = text;
+    syncDot.classList.toggle('is-live', !!live);
+  }
+
+  async function loadItems(){
+    try {
+      const res = await fetch('content/bucket-list.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      items = Array.isArray(data.items) ? data.items : [];
+      setSyncStatus(
+        SYNC_ENABLED ? '共有中：どちらの端末で追加・完了しても反映されます（数十秒〜数分かかることがあります）' : '共有先が未設定のため、今の内容を表示しています（変更はこの端末限りです）',
+        SYNC_ENABLED
+      );
+    } catch (err) {
+      items = [
+        { id: 'local-1', text: '北海道旅行', done: false },
+        { id: 'local-2', text: 'USJへ行く', done: false },
+        { id: 'local-3', text: '夜景を見る', done: true },
+        { id: 'local-4', text: '一緒に料理する', done: true }
+      ];
+      setSyncStatus('データを読み込めなかったため、サンプルを表示しています', false);
+    }
+    renderList();
+    updateProgress();
+  }
+
+  async function callWorker(path, body){
+    if (!SYNC_ENABLED) return { ok: true, localOnly: true };
+    try {
+      const res = await fetch(WORKER_URL + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: SECRET_HASH, ...body })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  function updateProgress(){
+    const total = items.length;
+    const done = items.filter(i => i.done).length;
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    progressNum.innerHTML = `${pct}<span>%</span>`;
+    progressFill.style.width = pct + '%';
+    progressRemain.textContent = total === 0 ? 'まだ何も登録されていません' : `達成 ${done} / ${total} 件・残り ${total - done} 個`;
+  }
+
+  function burstConfetti(x, y){
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const symbols = ['✦', '♡', '❀'];
+    const wrap = document.createElement('div');
+    wrap.className = 'confetti-burst';
+    wrap.style.left = x + 'px';
+    wrap.style.top = y + 'px';
+    for (let i = 0; i < 8; i++){
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.textContent = symbols[i % symbols.length];
+      piece.style.color = i % 2 === 0 ? 'var(--gold-soft)' : 'var(--rose)';
+      const angle = (Math.PI * 2 * i) / 8;
+      const dist = 46 + Math.random() * 20;
+      piece.style.setProperty('--cx', Math.cos(angle) * dist + 'px');
+      piece.style.setProperty('--cy', Math.sin(angle) * dist + 'px');
+      wrap.appendChild(piece);
+    }
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), 950);
+  }
+
+  function renderList(){
+    listEl.innerHTML = '';
+    if (items.length === 0){
+      listEl.innerHTML = '<p class="empty-msg">まだ何も登録されていません。上のフォームから追加してみてください。</p>';
+      return;
+    }
+    items.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'bucket-item' + (item.done ? ' is-done' : '');
+      row.innerHTML = `
+        <button class="bucket-check" aria-label="達成をトグル"></button>
+        <span class="bucket-label">${item.text}</span>
+        <button class="bucket-remove" aria-label="削除">✕</button>
+      `;
+
+      row.querySelector('.bucket-check').addEventListener('click', async (e) => {
+        item.done = !item.done;
+        if (item.done){
+          const rect = e.target.getBoundingClientRect();
+          burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }
+        renderList();
+        updateProgress();
+        const result = await callWorker('/bucket/toggle', { id: item.id });
+        if (!result.ok) setSyncStatus('保存に失敗しました：' + result.error, false);
+      });
+
+      row.querySelector('.bucket-remove').addEventListener('click', async () => {
+        items = items.filter(i => i.id !== item.id);
+        renderList();
+        updateProgress();
+        const result = await callWorker('/bucket/delete', { id: item.id });
+        if (!result.ok) setSyncStatus('削除の保存に失敗しました：' + result.error, false);
+      });
+
+      listEl.appendChild(row);
+    });
+  }
+
+  document.getElementById('add-item-btn').addEventListener('click', addItem);
+  document.getElementById('new-item-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addItem();
+  });
+
+  async function addItem(){
+    const input = document.getElementById('new-item-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const tempItem = { id: 'temp-' + Date.now(), text, done: false };
+    items.push(tempItem);
+    input.value = '';
+    renderList();
+    updateProgress();
+
+    const result = await callWorker('/bucket/add', { text });
+    if (!result.ok){
+      setSyncStatus('追加の保存に失敗しました：' + result.error, false);
+    }
+  }
+
+  document.getElementById('refresh-btn').addEventListener('click', loadItems);
+
+  loadItems();
+
+  // ---- reveal ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

@@ -3,6 +3,14 @@
 この手順を1回だけ行うと、`admin.html` から写真と思い出を送信するだけで、
 自動的にGitHubへ保存されてサイトに反映されるようになります。
 
+===
+Generate toke ID
+[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]
+Admin secret HASH
+[28ca9174]
+STEP3 ID
+[purple-night-2ef2.e2607439.workers.dev]
+===
 ---
 
 ## STEP 1. GitHubの「書き込み用の鍵（トークン）」を作る

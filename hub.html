@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .hub-header{ text-align:center; padding:8vh 6vw 2vh; position:relative; z-index:2; }
+  .hub-header p.note{
+    max-width:440px; margin:1.2em auto 0; color:var(--text-dim); font-size:0.88rem; line-height:1.9;
+  }
+
+  .hub-grid{
+    max-width:900px; margin:5vh auto 12vh; padding:0 6vw; position:relative; z-index:2;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px;
+  }
+  .hub-tile{
+    display:block; text-decoration:none;
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:12px;
+    padding:28px 22px; text-align:left;
+    transition:border-color 0.2s ease, transform 0.2s ease;
+  }
+  .hub-tile:hover{ border-color:var(--gold); transform:translateY(-3px); }
+  .hub-tile:active{ transform:scale(0.98); }
+  .hub-tile .icon{ font-size:1.6rem; }
+  .hub-tile .name{
+    margin-top:0.7em; font-family:var(--font-jp-serif); font-weight:600;
+    font-size:1.15rem; color:var(--text);
+  }
+  .hub-tile .desc{ margin-top:0.5em; font-size:0.85rem; color:var(--text-dim); line-height:1.8; }
+  .hub-tile .go{
+    margin-top:1em; font-family:var(--font-en); font-style:italic; font-size:0.82rem; color:var(--gold-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="hub.html" data-nav class="is-active">Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
+</nav>
+
+<div class="hub-header">
+  <p class="eyebrow reveal">Hub</p>
+  <h1 class="section-title reveal">いろいろな機能</h1>
+  <p class="note reveal">
+    思い出タイムラインやカレンダー以外の機能は、ここから行き来できます。
+  </p>
+</div>
+
+<div class="hub-grid">
+  <a class="hub-tile reveal" href="quiz.html" data-nav>
+    <div class="icon">💭</div>
+    <p class="name">二人のタイプ診断</p>
+    <p class="desc">質問に答えていくと「二人のタイプ」がわかる診断クイズ。</p>
+    <p class="go">開く →</p>
+  </a>
+
+  <a class="hub-tile reveal" href="admin.html" data-nav>
+    <div class="icon">📷</div>
+    <p class="name">思い出を追加</p>
+    <p class="desc">日付・写真・コメントを入力して、Storyに新しい思い出を追加します。</p>
+    <p class="go">開く →</p>
+  </a>
+
+  <a class="hub-tile reveal" href="capsule.html" data-nav>
+    <div class="icon">💌</div>
+    <p class="name">タイムカプセル</p>
+    <p class="desc">未来の日付まで開けられないメッセージを埋めておけます（同時に3個まで）。</p>
+    <p class="go">開く →</p>
+  </a>
+
+  <a class="hub-tile reveal" href="bucket-list.html" data-nav>
+    <div class="icon">📝</div>
+    <p class="name">Bucket List</p>
+    <p class="desc">二人でやりたいことリスト。追加・削除・完了チェックができます。</p>
+    <p class="go">開く →</p>
+  </a>
+
+  <a class="hub-tile reveal" href="stats.html" data-nav>
+    <div class="icon">📊</div>
+    <p class="name">統計ページ</p>
+    <p class="desc">写真枚数・日数・Bucket List達成率などを数字で振り返れます。</p>
+    <p class="go">開く →</p>
+  </a>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+
+  // ---- スクロールで浮かび上がるアニメーション（これが抜けていたため表示されなかった） ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

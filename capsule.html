@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — タイムカプセル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .capsule-section{
+    padding:4vh 6vw 10vh; max-width:560px; margin:0 auto;
+    text-align:center; position:relative; z-index:2;
+  }
+
+  .sync-note{
+    margin-top:1em; font-size:0.78rem; color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+  }
+  .sync-note button{
+    font-family:var(--font-jp-sans); font-size:0.76rem; color:var(--text-dim);
+    background:none; border:1px solid var(--line); padding:5px 12px; border-radius:99px; cursor:pointer;
+  }
+  .sync-note button:hover{ color:var(--gold-soft); border-color:var(--gold); }
+  .sync-dot{ width:7px; height:7px; border-radius:50%; background:var(--text-dim); display:inline-block; }
+  .sync-dot.is-live{ background:#8fc79a; }
+
+  .slot-note{
+    margin-top:1.6em; font-size:0.85rem; color:var(--text-dim);
+  }
+  .slot-note strong{ color:var(--gold-soft); font-weight:600; }
+
+  .add-toggle-btn{
+    margin-top:1.4em;
+    font-family:var(--font-jp-sans); font-size:0.92rem; color:var(--ink);
+    background:linear-gradient(var(--gold-soft), var(--gold));
+    border:none; padding:13px 28px; border-radius:2px; cursor:pointer;
+  }
+  .add-toggle-btn:disabled{ opacity:0.45; cursor:default; background:var(--ink-soft); color:var(--text-dim); }
+
+  .add-form{
+    margin-top:2em; text-align:left;
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:10px;
+    padding:22px 20px; display:none;
+  }
+  .add-form.is-open{ display:block; animation:fade-swap 0.35s ease; }
+  @keyframes fade-swap{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+
+  .add-form label{ display:block; font-size:0.8rem; color:var(--text-dim); margin:0.9em 0 0.4em; }
+  .add-form label:first-child{ margin-top:0; }
+  .add-form input, .add-form textarea{
+    width:100%; background:var(--ink-soft); border:1px solid var(--line);
+    color:var(--text); font-family:var(--font-jp-sans); font-size:0.92rem;
+    padding:11px 13px; border-radius:4px;
+  }
+  .add-form input:focus, .add-form textarea:focus{ outline:none; border-color:var(--gold); }
+  .add-form textarea{ min-height:80px; resize:vertical; }
+  .quick-date-btn{
+    margin-top:8px; font-family:var(--font-en); font-style:italic; font-size:0.78rem;
+    color:var(--text-dim); background:none; border:1px dashed var(--line);
+    padding:5px 12px; border-radius:99px; cursor:pointer;
+  }
+  .quick-date-btn:hover{ color:var(--gold-soft); border-color:var(--gold); }
+  .add-form .submit-btn{
+    margin-top:1.6em; width:100%;
+    font-family:var(--font-jp-sans); font-size:0.92rem; color:var(--ink);
+    background:linear-gradient(var(--gold-soft), var(--gold));
+    border:none; padding:12px; border-radius:4px; cursor:pointer;
+  }
+  .add-form .form-status{ margin-top:0.8em; font-size:0.82rem; text-align:center; min-height:1.4em; color:var(--text-dim); }
+  .add-form .form-status.err{ color:var(--rose); }
+  .add-form .form-status.ok{ color:#a9d1af; }
+
+  .capsule-list{ margin-top:3em; display:flex; flex-direction:column; gap:20px; text-align:left; }
+  .capsule-card{
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:12px;
+    padding:26px 22px; text-align:center;
+  }
+  .capsule-seal{
+    width:64px; height:64px; border-radius:50%; margin:0 auto 0.8em;
+    background:radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold) 55%, #8a6f3f 100%);
+    display:flex; align-items:center; justify-content:center; font-size:1.5rem;
+    box-shadow:0 10px 22px rgba(0,0,0,0.35);
+  }
+  .capsule-target{ font-family:var(--font-en); font-style:italic; color:var(--gold-soft); font-size:1rem; }
+  .capsule-author{ margin-top:0.3em; font-size:0.78rem; color:var(--text-dim); }
+
+  .countdown{ display:flex; gap:clamp(0.6rem, 3vw, 1.4rem); justify-content:center; margin-top:1.2em; }
+  .countdown-num{ font-family:var(--font-en); font-weight:600; font-size:clamp(1.3rem, 5vw, 1.8rem); color:var(--text); line-height:1; }
+  .countdown-label{ margin-top:0.3em; font-size:0.62rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); }
+
+  .open-btn{
+    margin-top:1.6em;
+    font-family:var(--font-jp-sans); font-size:0.9rem; color:var(--ink);
+    background:linear-gradient(var(--gold-soft), var(--gold));
+    border:none; padding:12px 28px; border-radius:2px; cursor:pointer;
+  }
+
+  .letter-reveal{
+    margin-top:1.6em; width:100%;
+    background:var(--paper); color:#332c1f;
+    padding:clamp(1.4rem, 5vw, 2rem);
+    font-family:var(--font-jp-serif); font-size:0.98rem; line-height:2;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    display:none; text-align:left;
+  }
+  .letter-reveal.is-open{ display:block; animation:unfold 0.8s ease; }
+  @keyframes unfold{ from{ opacity:0; transform:translateY(20px) scale(0.97); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  @media (prefers-reduced-motion: reduce){ .letter-reveal.is-open{ animation:none; } }
+  .letter-reveal .sign{ margin-top:1.4em; text-align:right; font-family:var(--font-en); font-style:italic; color:var(--rose); }
+
+  .opened-tag{
+    display:inline-block; margin-top:0.6em; font-size:0.72rem; letter-spacing:0.1em;
+    color:#a9d1af; border:1px solid #4a6350; border-radius:99px; padding:2px 12px;
+  }
+
+  .empty-msg{ margin-top:2em; color:var(--text-dim); font-size:0.88rem; }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
+</nav>
+
+<section class="capsule-section">
+  <p class="eyebrow reveal">Time Capsule</p>
+  <h2 class="section-title reveal">タイムカプセル</h2>
+
+  <p class="sync-note reveal">
+    <span class="sync-dot" id="sync-dot"></span>
+    <span id="sync-status">共有先の設定を確認中…</span>
+    <button id="refresh-btn">🔄 最新の状態に更新</button>
+  </p>
+
+  <p class="slot-note reveal" id="slot-note"></p>
+
+  <button class="add-toggle-btn reveal" id="add-toggle-btn">＋ 新しいカプセルを埋める</button>
+
+  <div class="add-form" id="add-form">
+    <label for="f-date">開封日</label>
+    <input type="date" id="f-date" required>
+    <button type="button" class="quick-date-btn" id="quick-date-btn">🔧 テスト用：今日の日付にする（すぐ開封できます）</button>
+
+    <label for="f-author">誰から？（任意）</label>
+    <input type="text" id="f-author" placeholder="例：彼女より">
+
+    <label for="f-message">メッセージ</label>
+    <textarea id="f-message" placeholder="未来の二人へ、メッセージを書いてください"></textarea>
+
+    <button class="submit-btn" id="submit-btn">このカプセルを埋める</button>
+    <p class="form-status" id="form-status"></p>
+  </div>
+
+  <div class="capsule-list" id="capsule-list"></div>
+</section>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+
+  /* ================================================================
+     裏方プログラム（Cloudflare Worker）のURL。
+     admin.htmlと同じWorkerのURLを設定してください。
+     未設定のままだと、この端末の中だけで完結するローカルモードで動きます。
+     ================================================================ */
+  const WORKER_URL = 'https://REPLACE-ME.workers.dev';
+  const SYNC_ENABLED = !WORKER_URL.includes('REPLACE-ME');
+  const MAX_PENDING = 3; // 同時に埋められる未開封カプセルの上限（worker.js側と合わせています）
+
+  let capsules = [];
+  const timers = {};
+
+  const listEl = document.getElementById('capsule-list');
+  const syncStatus = document.getElementById('sync-status');
+  const syncDot = document.getElementById('sync-dot');
+  const slotNote = document.getElementById('slot-note');
+  const addToggleBtn = document.getElementById('add-toggle-btn');
+  const addForm = document.getElementById('add-form');
+  const formStatus = document.getElementById('form-status');
+
+  function setSyncStatus(text, live){
+    syncStatus.textContent = text;
+    syncDot.classList.toggle('is-live', !!live);
+  }
+
+  async function loadCapsules(){
+    try {
+      const res = await fetch('content/time-capsules.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      capsules = Array.isArray(data.capsules) ? data.capsules : [];
+      setSyncStatus(
+        SYNC_ENABLED ? '共有中：埋めたカプセルはもう一方の端末にも反映されます（数十秒〜数分かかることがあります）' : '共有先が未設定のため、今の内容を表示しています（変更はこの端末限りです）',
+        SYNC_ENABLED
+      );
+    } catch (err) {
+      capsules = [{
+        id: 'local-1',
+        unlockDate: '2027-10-04T00:00:00',
+        message: 'このタイムカプセルを開けているということは、あの日からまた一つ、二人の時間が積み重なったということですね。',
+        author: 'Hiroto',
+        opened: false
+      }];
+      setSyncStatus('データを読み込めなかったため、サンプルを表示しています', false);
+    }
+    renderAll();
+  }
+
+  async function callWorker(path, body){
+    if (!SYNC_ENABLED) return { ok: true, localOnly: true };
+    try {
+      const res = await fetch(WORKER_URL + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: SECRET_HASH, ...body })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  function pendingCount(){
+    return capsules.filter(c => !c.opened).length;
+  }
+
+  function renderSlotNote(){
+    const pending = pendingCount();
+    slotNote.innerHTML = `未開封のカプセル：<strong>${pending} / ${MAX_PENDING}</strong>（開封すると枠が空きます）`;
+    addToggleBtn.disabled = pending >= MAX_PENDING;
+    addToggleBtn.textContent = pending >= MAX_PENDING ? '上限に達しています（開封してから追加できます）' : '＋ 新しいカプセルを埋める';
+  }
+
+  function formatLabel(dateStr){
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  }
+
+  function renderAll(){
+    renderSlotNote();
+    listEl.innerHTML = '';
+    Object.values(timers).forEach(clearInterval);
+
+    if (capsules.length === 0){
+      listEl.innerHTML = '<p class="empty-msg">まだカプセルは埋められていません。</p>';
+      return;
+    }
+
+    // 未開封を先に、開封済みを後ろに
+    const sorted = [...capsules].sort((a, b) => (a.opened === b.opened) ? 0 : (a.opened ? 1 : -1));
+
+    sorted.forEach(capsule => {
+      const card = document.createElement('div');
+      card.className = 'capsule-card';
+      const isUnlockable = new Date(capsule.unlockDate) <= new Date();
+
+      if (capsule.opened){
+        card.innerHTML = `
+          <div class="capsule-seal">💌</div>
+          <p class="capsule-target">${formatLabel(capsule.unlockDate)}</p>
+          ${capsule.author ? `<p class="capsule-author">${capsule.author}</p>` : ''}
+          <span class="opened-tag">開封済み</span>
+          <div class="letter-reveal is-open">
+            <p>${capsule.message}</p>
+            ${capsule.author ? `<p class="sign">— ${capsule.author}</p>` : ''}
+          </div>
+        `;
+      } else if (isUnlockable){
+        card.innerHTML = `
+          <div class="capsule-seal">💌</div>
+          <p class="capsule-target">${formatLabel(capsule.unlockDate)} を迎えました</p>
+          ${capsule.author ? `<p class="capsule-author">${capsule.author}</p>` : ''}
+          <button class="open-btn" data-id="${capsule.id}">開封する</button>
+        `;
+        card.querySelector('.open-btn').addEventListener('click', async (e) => {
+          capsule.opened = true;
+          renderAll();
+          const result = await callWorker('/capsule/open', { id: capsule.id });
+          if (!result.ok) setSyncStatus('開封の保存に失敗しました：' + result.error, false);
+        });
+      } else {
+        card.innerHTML = `
+          <div class="capsule-seal">🔒</div>
+          <p class="capsule-target">${formatLabel(capsule.unlockDate)} まで開封できません</p>
+          ${capsule.author ? `<p class="capsule-author">${capsule.author}</p>` : ''}
+          <div class="countdown" id="countdown-${capsule.id}"></div>
+        `;
+        const update = () => {
+          const el = document.getElementById(`countdown-${capsule.id}`);
+          if (!el) return;
+          const diff = Math.max(new Date(capsule.unlockDate) - new Date(), 0);
+          const d = Math.floor(diff / 86400000);
+          const h = Math.floor((diff % 86400000) / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          el.innerHTML = `
+            <div><p class="countdown-num">${d}</p><p class="countdown-label">Days</p></div>
+            <div><p class="countdown-num">${h}</p><p class="countdown-label">Hrs</p></div>
+            <div><p class="countdown-num">${m}</p><p class="countdown-label">Min</p></div>
+            <div><p class="countdown-num">${s}</p><p class="countdown-label">Sec</p></div>
+          `;
+          if (new Date(capsule.unlockDate) - new Date() <= 0){
+            renderAll();
+          }
+        };
+        update();
+        timers[capsule.id] = setInterval(update, 1000);
+      }
+
+      listEl.appendChild(card);
+    });
+  }
+
+  addToggleBtn.addEventListener('click', () => {
+    addForm.classList.toggle('is-open');
+  });
+
+  document.getElementById('quick-date-btn').addEventListener('click', () => {
+    const today = new Date();
+    document.getElementById('f-date').value = today.toISOString().slice(0, 10);
+    formStatus.textContent = '日付を今日にしました。この状態で埋めると、すぐ開封できる状態になります。';
+    formStatus.className = 'form-status';
+  });
+
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    const dateVal = document.getElementById('f-date').value;
+    const author = document.getElementById('f-author').value.trim();
+    const message = document.getElementById('f-message').value.trim();
+
+    if (!dateVal || !message){
+      formStatus.textContent = '開封日とメッセージは必須です';
+      formStatus.className = 'form-status err';
+      return;
+    }
+    if (pendingCount() >= MAX_PENDING){
+      formStatus.textContent = `未開封のカプセルは同時に${MAX_PENDING}個までです`;
+      formStatus.className = 'form-status err';
+      return;
+    }
+
+    formStatus.textContent = '埋めています…';
+    formStatus.className = 'form-status';
+
+    const tempCapsule = {
+      id: 'temp-' + Date.now(),
+      unlockDate: dateVal + 'T00:00:00',
+      message, author, opened: false
+    };
+    capsules.push(tempCapsule);
+    renderAll();
+
+    const result = await callWorker('/capsule/add', { unlockDate: tempCapsule.unlockDate, message, author });
+    if (result.ok){
+      formStatus.textContent = '埋めました🌱';
+      formStatus.className = 'form-status ok';
+      document.getElementById('f-date').value = '';
+      document.getElementById('f-author').value = '';
+      document.getElementById('f-message').value = '';
+    } else {
+      formStatus.textContent = '保存に失敗しました：' + result.error;
+      formStatus.className = 'form-status err';
+    }
+  });
+
+  document.getElementById('refresh-btn').addEventListener('click', loadCapsules);
+
+  loadCapsules();
+
+  // ---- reveal ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — 統計ページ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .stats-header{ text-align:center; padding:4vh 6vw 2vh; position:relative; z-index:2; }
+
+  .stats-grid{
+    max-width:960px; margin:4vh auto 10vh; padding:0 6vw; position:relative; z-index:2;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:18px;
+  }
+  .stat-card{
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:12px;
+    padding:26px 20px; text-align:center;
+  }
+  .stat-icon{ font-size:1.6rem; }
+  .stat-value{
+    margin-top:0.5em; font-family:var(--font-en); font-weight:600;
+    font-size:clamp(1.8rem, 6vw, 2.4rem); color:var(--gold-soft); line-height:1;
+  }
+  .stat-value .unit{ font-size:0.4em; color:var(--text-dim); font-style:italic; margin-left:2px; }
+  .stat-label{ margin-top:0.6em; font-size:0.8rem; letter-spacing:0.04em; color:var(--text-dim); }
+
+  /* Bucket List達成率だけ円グラフで表現 */
+  .ring-card{ grid-column:span 1; }
+  .ring-wrap{ position:relative; width:110px; height:110px; margin:0 auto; }
+  .ring-wrap svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .ring-bg{ fill:none; stroke:var(--ink-soft); stroke-width:8; }
+  .ring-fg{
+    fill:none; stroke:url(#ring-gradient); stroke-width:8; stroke-linecap:round;
+    stroke-dasharray:301.6; stroke-dashoffset:301.6;
+    transition:stroke-dashoffset 1.2s cubic-bezier(.22,.68,.36,1);
+  }
+  .ring-text{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-en); font-weight:600; font-size:1.3rem; color:var(--gold-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
+</nav>
+
+<div class="stats-header">
+  <p class="eyebrow reveal">Our Numbers</p>
+  <h2 class="section-title reveal">二人の記録を数字で</h2>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card reveal">
+    <div class="stat-icon">📷</div>
+    <p class="stat-value" id="stat-photos">0</p>
+    <p class="stat-label">登録した写真枚数</p>
+  </div>
+
+  <div class="stat-card reveal">
+    <div class="stat-icon">🎉</div>
+    <p class="stat-value" id="stat-events">0</p>
+    <p class="stat-label">思い出イベント数</p>
+  </div>
+
+  <div class="stat-card reveal">
+    <div class="stat-icon">♡</div>
+    <p class="stat-value" id="stat-days">0</p>
+    <p class="stat-label">付き合ってからの日数</p>
+  </div>
+
+  <div class="stat-card reveal">
+    <div class="stat-icon">⏱️</div>
+    <p class="stat-value" id="stat-hours">0</p>
+    <p class="stat-label">一緒に過ごした時間（時間換算）</p>
+  </div>
+
+  <div class="stat-card reveal">
+    <div class="stat-icon">✔︎</div>
+    <p class="stat-value" id="stat-bucket-done">0</p>
+    <p class="stat-label">完了したBucket List数</p>
+  </div>
+
+  <div class="stat-card ring-card reveal">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 110 110">
+        <defs>
+          <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ba8b86"/>
+            <stop offset="100%" stop-color="#e3cfa0"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="55" cy="55" r="48"/>
+        <circle class="ring-fg" id="ring-fg" cx="55" cy="55" r="48"/>
+      </svg>
+      <div class="ring-text" id="ring-text">0%</div>
+    </div>
+    <p class="stat-label" style="margin-top:1em;">Bucket List 達成率</p>
+  </div>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+  // ---- 実データを読み込む（見つからない場合はサンプル値にフォールバック） ----
+  async function loadJson(path, fallback){
+    try {
+      const res = await fetch(path, { cache: 'no-store' });
+      if (!res.ok) throw new Error('not found');
+      return await res.json();
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  function animateCount(el, target, suffix = '', duration = 1100){
+    const start = performance.now();
+    function frame(now){
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(target * eased);
+      el.innerHTML = value.toLocaleString('ja-JP') + (suffix ? `<span class="unit">${suffix}</span>` : '');
+      if (progress < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  (async () => {
+    const memoriesData = await loadJson('content/memories.json', {
+      startDate: '2025-10-04T00:00:00',
+      memories: [
+        { photos: [null] }, { photos: [null, null, null] }, { photos: [null, null, null, null, null] },
+        { photos: [null] }, { photos: [null, null] }, { photos: [null, null] }
+      ]
+    });
+    const bucketData = await loadJson('content/bucket-list.json', {
+      items: [{ done: false }, { done: false }, { done: true }, { done: true }]
+    });
+
+    const photoCount = memoriesData.memories.reduce(
+      (sum, m) => sum + (Array.isArray(m.photos) ? m.photos.filter(p => p).length : 0), 0
+    );
+    const eventCount = memoriesData.memories.length;
+
+    const startDate = new Date(memoriesData.startDate);
+    const now = new Date();
+    const diffMs = Math.max(now - startDate, 0);
+    const days = Math.floor(diffMs / 86400000);
+    const hours = Math.floor(diffMs / 3600000);
+
+    const bucketTotal = bucketData.items.length;
+    const bucketDone = bucketData.items.filter(i => i.done).length;
+    const bucketPct = bucketTotal === 0 ? 0 : Math.round((bucketDone / bucketTotal) * 100);
+
+    animateCount(document.getElementById('stat-photos'), photoCount, '枚');
+    animateCount(document.getElementById('stat-events'), eventCount, '件');
+    animateCount(document.getElementById('stat-days'), days, '日');
+    animateCount(document.getElementById('stat-hours'), hours, '時間');
+    animateCount(document.getElementById('stat-bucket-done'), bucketDone, `/ ${bucketTotal}`);
+
+    const ringFg = document.getElementById('ring-fg');
+    const circumference = 2 * Math.PI * 48; // 301.6
+    setTimeout(() => {
+      ringFg.style.strokeDashoffset = circumference - (circumference * bucketPct / 100);
+    }, 200);
+    animateCount(document.getElementById('ring-text'), bucketPct, '%', 1200);
+  })();
+
+  // ---- reveal ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

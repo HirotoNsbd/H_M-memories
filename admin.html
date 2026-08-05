@@ -87,6 +87,62 @@
   }
 
   .submit-row{ margin-top:2.4em; text-align:center; }
+
+  /* ---- Story表示トグル ---- */
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+  }
+  .toggle-switch{
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .toggle-track{
+    display:block;
+    width:46px; height:26px;
+    border-radius:13px;
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    position:relative;
+    transition:background 0.25s ease;
+  }
+  .toggle-switch.is-on .toggle-track{ background:var(--gold); }
+  .toggle-thumb{
+    position:absolute;
+    top:3px; left:3px;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--text);
+    transition:transform 0.25s ease;
+  }
+  .toggle-switch.is-on .toggle-thumb{ transform:translateX(20px); background:var(--ink); }
+
+  .toggle-text{ text-align:left; }
+  .toggle-title{ font-size:0.92rem; color:var(--text); }
+  .toggle-state{
+    display:block;
+    font-family:var(--font-en);
+    font-style:italic;
+    font-size:0.78rem;
+    margin-top:2px;
+  }
+  .toggle-state.state-on{ color:var(--gold-soft); }
+  .toggle-state.state-off{ color:var(--text-dim); }
+
+  .toggle-hint{
+    margin-top:0.7em;
+    font-size:0.78rem;
+    color:var(--text-dim);
+    line-height:1.7;
+  }
   .status-msg{
     margin-top:1.2em;
     font-size:0.88rem;
@@ -109,12 +165,16 @@
 
 <div class="grain"></div>
 <div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
 
 <nav class="site-nav">
   <a href="story.html" data-nav>Story</a>
   <a href="calendar.html" data-nav>Calendar</a>
-  <a href="quiz.html" data-nav>Quiz</a>
-  <a href="index.html" class="lock-link">🔒 ロック画面へ</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
 </nav>
 
 <section class="admin-section">
@@ -163,6 +223,24 @@
       <div class="preview-grid" id="preview-grid"></div>
     </div>
 
+    <div class="field">
+      <label>Storyページへの表示</label>
+      <div class="toggle-row">
+        <button type="button" class="toggle-switch is-on" id="story-toggle" role="switch" aria-checked="true">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </button>
+        <div class="toggle-text">
+          <span class="toggle-title">Story（タイムライン）にも表示する</span>
+          <span class="toggle-state state-on" id="story-toggle-label">ON — 表示する</span>
+        </div>
+      </div>
+      <p class="toggle-hint">
+        OFFにすると、この思い出はCalendar（カレンダー）には必ず反映されますが、
+        Storyのタイムラインには追加されません。写真が多い思い出などで、
+        Storyページを長くしたくないときはOFFにしてください。
+      </p>
+    </div>
+
     <div class="submit-row">
       <button type="submit" class="btn" id="submit-btn">この思い出を公開する</button>
       <p class="status-msg" id="status-msg"></p>
@@ -187,7 +265,7 @@
      （SETUP.md の手順で Cloudflare Workers にデプロイした後のURLです）
      例: const WORKER_URL = 'https://memory-site-admin.your-name.workers.dev';
      ================================================================ */
-  const WORKER_URL = 'https://purple-night-2ef2.e2607439.workers.dev/';
+  const WORKER_URL = 'https://REPLACE-ME.workers.dev';
 
   const iconPicker = document.getElementById('icon-picker');
   let selectedIcon = '🎉';
@@ -197,6 +275,19 @@
       btn.classList.add('is-selected');
       selectedIcon = btn.dataset.icon;
     });
+  });
+
+  const storyToggle = document.getElementById('story-toggle');
+  const storyToggleLabel = document.getElementById('story-toggle-label');
+  let showInStory = true;
+
+  storyToggle.addEventListener('click', () => {
+    showInStory = !showInStory;
+    storyToggle.classList.toggle('is-on', showInStory);
+    storyToggle.setAttribute('aria-checked', String(showInStory));
+    storyToggleLabel.textContent = showInStory ? 'ON — 表示する' : 'OFF — 表示しない';
+    storyToggleLabel.classList.toggle('state-on', showInStory);
+    storyToggleLabel.classList.toggle('state-off', !showInStory);
   });
 
   const photosInput = document.getElementById('f-photos');
@@ -267,6 +358,7 @@
         icon: selectedIcon,
         title: document.getElementById('f-title').value,
         comment: document.getElementById('f-comment').value,
+        showInStory,
         photos
       };
 
@@ -289,6 +381,12 @@
       iconPicker.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('is-selected'));
       iconPicker.querySelector('.icon-btn').classList.add('is-selected');
       selectedIcon = iconPicker.querySelector('.icon-btn').dataset.icon;
+      showInStory = true;
+      storyToggle.classList.add('is-on');
+      storyToggle.setAttribute('aria-checked', 'true');
+      storyToggleLabel.textContent = 'ON — 表示する';
+      storyToggleLabel.classList.add('state-on');
+      storyToggleLabel.classList.remove('state-off');
     } catch (err) {
       statusMsg.textContent = '送信に失敗しました：' + err.message;
       statusMsg.className = 'status-msg err';
