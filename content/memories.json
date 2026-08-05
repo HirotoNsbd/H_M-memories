@@ -8,7 +8,8 @@
       "comment": "付き合ってくれてありがとう。",
       "photos": [
         null
-      ]
+      ],
+      "showInStory": true
     },
     {
       "icon": "🎄",
@@ -19,7 +20,8 @@
         null,
         null,
         null
-      ]
+      ],
+      "showInStory": true
     },
     {
       "icon": "🏰",
@@ -32,7 +34,8 @@
         null,
         null,
         null
-      ]
+      ],
+      "showInStory": true
     },
     {
       "icon": "💯",
@@ -41,7 +44,8 @@
       "comment": "これからもよろしくね。",
       "photos": [
         null
-      ]
+      ],
+      "showInStory": true
     },
     {
       "icon": "🍽️",
@@ -51,7 +55,8 @@
       "photos": [
         null,
         null
-      ]
+      ],
+      "showInStory": true
     },
     {
       "icon": "🌸",
@@ -61,16 +66,8 @@
       "photos": [
         null,
         null
-      ]
-    },
-    {
-      "icon": "🎉",
-      "date": "2026-07-11",
-      "title": "Toy story5",
-      "comment": "I love UUUUUUUU",
-      "photos": [
-        "photos/2026-07-11-1783822021831-0-IMG_0510.jpg"
-      ]
+      ],
+      "showInStory": true
     }
   ]
 }
