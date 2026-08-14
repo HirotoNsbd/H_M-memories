@@ -166,6 +166,20 @@
 <div class="grain"></div>
 <div class="petals" id="petals" aria-hidden="true"></div>
 <div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+<div class="snow-layer" id="snow-layer" aria-hidden="true"></div>
+<svg class="winter-motif" viewBox="0 0 60 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!-- 雪だるま（控えめな線画・薄い色味） -->
+  <circle cx="30" cy="50" r="17" fill="#e7eff5"/>
+  <circle cx="30" cy="23" r="11.5" fill="#e7eff5"/>
+  <line x1="17" y1="25" x2="8" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="43" y1="25" x2="52" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="26" cy="21" r="1.3" fill="#5b6472"/>
+  <circle cx="34" cy="21" r="1.3" fill="#5b6472"/>
+  <path d="M30 24 L37 26.5 L30 27.5 Z" fill="#c98a4b"/>
+  <circle cx="30" cy="45" r="1.1" fill="#5b6472"/>
+  <circle cx="30" cy="51" r="1.1" fill="#5b6472"/>
+  <circle cx="30" cy="57" r="1.1" fill="#5b6472"/>
+</svg>
 
 <nav class="site-nav">
   <a href="story.html" data-nav>Story</a>
@@ -256,6 +270,8 @@
 
 <script src="assets/auth.js"></script>
 <script src="assets/effects.js"></script>
+<script src="assets/transition.js"></script>
+<script src="assets/concierge.js"></script>
 <script>
   protectPage();
   wireNavLinks();

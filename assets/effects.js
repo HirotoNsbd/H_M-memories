@@ -164,11 +164,55 @@
     if (typeof wireNavLinks === 'function') wireNavLinks();
   }
 
+  // ---- 6. 冬季シーズンテーマ（12/1〜1/15限定・サイト全体共通） ----
+  // 表示期間はここで定数化。変更したい場合はこの2つだけ書き換えればOK。
+  const WINTER_START = { month: 12, day: 1 };  // 12月1日から
+  const WINTER_END   = { month: 2,  day: 15 }; // 1月15日まで（年をまたぐ）
+
+  function isWinterSeason(date = new Date()){
+    const m = date.getMonth() + 1; // 1〜12
+    const d = date.getDate();
+    if (m === WINTER_START.month && d >= WINTER_START.day) return true;
+    if (m === WINTER_END.month && d <= WINTER_END.day) return true;
+    return false;
+  }
+
+  function buildSnowflakes(layer){
+    if (layer.dataset.built) return;
+    layer.dataset.built = '1';
+    const symbols = ['❄', '❅', '❆'];
+    // 雨の日モードよりだいぶ少なめの数
+    const count = window.innerWidth < 480 ? 10 : (window.innerWidth < 900 ? 16 : 22);
+    for (let i = 0; i < count; i++){
+      const flake = document.createElement('span');
+      flake.className = 'flake';
+      flake.textContent = symbols[i % symbols.length];
+      flake.style.left = (Math.random() * 100) + '%';
+      flake.style.fontSize = (0.5 + Math.random() * 0.45) + 'rem'; // 小さめ
+      flake.style.animationDuration = (14 + Math.random() * 10) + 's'; // 雨よりゆっくり
+      flake.style.animationDelay = (Math.random() * -20) + 's';
+      flake.style.setProperty('--drift', (Math.random() * 40 - 20) + 'px');
+      layer.appendChild(flake);
+    }
+  }
+
+  function initWinterTheme(){
+    const layer = document.getElementById('snow-layer');
+    if (!layer || !isWinterSeason()) return;
+
+    document.body.classList.add('winter-mode');
+    if (!reduceMotion){
+      buildSnowflakes(layer);
+      layer.classList.add('is-on');
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initPetals();
     initParallax();
     initStagger();
     initDayNightMode();
     initRainMode();
+    initWinterTheme();
   });
 })();

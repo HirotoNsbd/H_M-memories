@@ -178,6 +178,117 @@
   .bgm-toggle:hover{ transform:scale(1.08); background:rgba(35,40,56,0.95); }
   .bgm-toggle.is-playing .note{ animation:pulse 1.4s ease-in-out infinite; }
   @keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.25); } }
+
+  /* ---- 記念日限定モード ---- */
+  .anniv-overlay{
+    position:fixed; inset:0; z-index:100;
+    background:rgba(8,9,14,0.92);
+    backdrop-filter:blur(6px);
+    display:none;
+    align-items:center; justify-content:center;
+    text-align:center;
+    opacity:0;
+    transition:opacity 0.9s ease;
+  }
+  .anniv-overlay.is-open{ display:flex; opacity:1; }
+
+  .anniv-skip{
+    position:absolute; top:20px; right:20px;
+    background:none; border:1px solid var(--line); color:var(--text-dim);
+    font-family:var(--font-en); font-style:italic; font-size:0.78rem;
+    padding:8px 16px; border-radius:99px; cursor:pointer;
+    transition:color 0.2s ease, border-color 0.2s ease;
+  }
+  .anniv-skip:hover{ color:var(--gold-soft); border-color:var(--gold); }
+
+  .anniv-glow{
+    position:absolute; width:340px; height:340px; border-radius:50%;
+    background:radial-gradient(circle, rgba(227,207,160,0.16), transparent 70%);
+    animation:anniv-pulse 4.5s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes anniv-pulse{
+    0%,100%{ transform:scale(1); opacity:0.7; }
+    50%{ transform:scale(1.15); opacity:1; }
+  }
+  @media (prefers-reduced-motion: reduce){ .anniv-glow{ animation:none; } }
+
+  .anniv-content{
+    position:relative; width:100%; max-width:520px; min-height:180px;
+    padding:0 8vw;
+  }
+  .anniv-step{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 1.1s ease, transform 1.1s ease;
+    transform:translateY(10px);
+    pointer-events:none;
+  }
+  .anniv-step.is-active{ opacity:1; transform:translateY(0); pointer-events:auto; }
+
+  .anniv-eyebrow{
+    font-family:var(--font-en); font-style:italic; letter-spacing:0.08em;
+    color:var(--gold-soft); font-size:clamp(1.3rem, 6vw, 2rem);
+  }
+  .anniv-heart{ margin-top:0.5em; font-size:2rem; color:var(--rose); }
+  .anniv-line{
+    font-family:var(--font-jp-serif); font-weight:600;
+    font-size:clamp(1.5rem, 6.5vw, 2.3rem); color:var(--text);
+  }
+  .anniv-final{
+    font-family:var(--font-jp-serif); font-weight:700;
+    font-size:clamp(1.5rem, 6.5vw, 2.2rem); color:var(--gold-soft); margin-bottom:1.2em;
+  }
+
+  /* ---- スクロール位置ハイライトナビ（さりげなく現在地を示すだけのミニマルUI） ---- */
+  .scrollspy-nav{
+    position:fixed;
+    right:18px; top:50%; transform:translateY(-50%);
+    z-index:15;
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .scrollspy-item{
+    display:flex; align-items:center; gap:8px;
+    background:none; border:none; padding:2px; cursor:pointer;
+    justify-content:flex-end;
+  }
+  .scrollspy-dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--text-dim); opacity:0.5;
+    transition:background 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+    flex-shrink:0;
+  }
+  .scrollspy-label{
+    font-family:var(--font-en); font-style:italic; font-size:0.72rem;
+    color:var(--text-dim); opacity:0;
+    transition:opacity 0.25s ease;
+    white-space:nowrap;
+  }
+  .scrollspy-item:hover .scrollspy-label{ opacity:0.8; }
+  .scrollspy-item.is-active .scrollspy-dot{
+    background:var(--gold); opacity:1; transform:scale(1.4);
+  }
+  .scrollspy-item.is-active .scrollspy-label{ opacity:1; color:var(--gold-soft); }
+
+  /* スマホ：右側固定 → 上部の横並びバーに切り替え。写真の邪魔にならないよう最小限に。 */
+  @media (max-width:800px){
+    .scrollspy-nav{
+      position:sticky;
+      top:0; /* .site-nav の下に張り付く */
+      right:auto; transform:none;
+      flex-direction:row;
+      justify-content:center;
+      gap:22px;
+      padding:8px 4vw;
+      background:rgba(18,20,28,0.78);
+      backdrop-filter:blur(6px);
+      border-bottom:1px solid var(--line);
+    }
+    .scrollspy-item{ flex-direction:column; gap:4px; }
+    .scrollspy-label{ font-size:0.62rem; opacity:0.55; }
+    .scrollspy-item.is-active .scrollspy-label{ opacity:1; }
+    .scrollspy-dot{ width:5px; height:5px; }
+  }
 </style>
 </head>
 <body>
@@ -185,6 +296,38 @@
 <div class="grain"></div>
 <div class="petals" id="petals" aria-hidden="true"></div>
 <div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+<div class="snow-layer" id="snow-layer" aria-hidden="true"></div>
+<svg class="winter-motif" viewBox="0 0 60 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!-- 雪だるま（控えめな線画・薄い色味） -->
+  <circle cx="30" cy="50" r="17" fill="#e7eff5"/>
+  <circle cx="30" cy="23" r="11.5" fill="#e7eff5"/>
+  <line x1="17" y1="25" x2="8" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="43" y1="25" x2="52" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="26" cy="21" r="1.3" fill="#5b6472"/>
+  <circle cx="34" cy="21" r="1.3" fill="#5b6472"/>
+  <path d="M30 24 L37 26.5 L30 27.5 Z" fill="#c98a4b"/>
+  <circle cx="30" cy="45" r="1.1" fill="#5b6472"/>
+  <circle cx="30" cy="51" r="1.1" fill="#5b6472"/>
+  <circle cx="30" cy="57" r="1.1" fill="#5b6472"/>
+</svg>
+
+<!-- 記念日限定モード：付き合った記念日だけ、通常ページの手前に表示されるフルスクリーン演出 -->
+<div class="anniv-overlay" id="anniv-overlay" aria-hidden="true">
+  <button class="anniv-skip" id="anniv-skip">Skip / 通常表示へ</button>
+  <div class="anniv-glow" aria-hidden="true"></div>
+  <div class="anniv-content">
+    <div class="anniv-step is-active" data-step="0">
+      <p class="anniv-eyebrow">Happy <span id="anniv-years"></span>Anniversary</p>
+      <p class="anniv-heart">❤</p>
+    </div>
+    <div class="anniv-step" data-step="1"><p class="anniv-line">ありがとう。</p></div>
+    <div class="anniv-step" data-step="2"><p class="anniv-line">これからもよろしく。</p></div>
+    <div class="anniv-step" data-step="3">
+      <p class="anniv-final">Happy Anniversary</p>
+      <button class="btn" id="anniv-enter">サイトを見る</button>
+    </div>
+  </div>
+</div>
 
 <nav class="site-nav">
   <a href="story.html" data-nav class="is-active">Story</a>
@@ -196,6 +339,22 @@
   <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
 </nav>
 
+<!-- スクロール位置ハイライトナビ：今どのセクションを見ているかをさりげなく示す -->
+<nav class="scrollspy-nav" id="scrollspy-nav" aria-label="ページ内ナビゲーション">
+  <button class="scrollspy-item" data-target="section-timeline">
+    <span class="scrollspy-dot"></span><span class="scrollspy-label">Timeline</span>
+  </button>
+  <button class="scrollspy-item" data-target="section-together">
+    <span class="scrollspy-dot"></span><span class="scrollspy-label">Together</span>
+  </button>
+  <button class="scrollspy-item" data-target="section-places">
+    <span class="scrollspy-dot"></span><span class="scrollspy-label">Places</span>
+  </button>
+  <button class="scrollspy-item" data-target="section-letter">
+    <span class="scrollspy-dot"></span><span class="scrollspy-label">Letter</span>
+  </button>
+</nav>
+
 <section class="hero">
   <p class="eyebrow">Our Story</p>
   <h1 class="hero-names">Hiroto<span class="x">×</span>○○</h1>
@@ -204,7 +363,7 @@
   <p class="scroll-cue">Scroll ↓</p>
 </section>
 
-<section class="timeline-section">
+<section class="timeline-section" id="section-timeline">
   <div class="timeline-header reveal">
     <p class="eyebrow">Memories</p>
     <h2 class="section-title">二人の思い出</h2>
@@ -212,7 +371,7 @@
   <div class="timeline" id="timeline"></div>
 </section>
 
-<section class="counter-section">
+<section class="counter-section" id="section-together">
   <p class="counter-together reveal">Together for</p>
   <div class="counter-grid">
     <div class="reveal"><div class="counter-num" id="c-days">0</div><div class="counter-label">Days</div></div>
@@ -222,7 +381,7 @@
   <div class="seal-emblem reveal">♡</div>
 </section>
 
-<section class="map-section">
+<section class="map-section" id="section-places">
   <div class="reveal">
     <p class="eyebrow">Places</p>
     <h2 class="section-title">一緒に行った場所</h2>
@@ -243,7 +402,7 @@
   <p class="map-note reveal">※ 実際の地図ではなく、旅の記録を示すイラストです。場所は story.html 内の SVG を編集すると変更できます。</p>
 </section>
 
-<section class="letter-section">
+<section class="letter-section" id="section-letter">
   <div class="reveal">
     <p class="eyebrow">A Letter</p>
     <h2 class="section-title">きみへ</h2>
@@ -288,14 +447,68 @@
 <script src="assets/auth.js"></script>
 <script src="assets/memories-data.js"></script>
 <script src="assets/effects.js"></script>
+<script src="assets/transition.js"></script>
+<script src="assets/concierge.js"></script>
 <script>
   // ロックされている（正しい合言葉を経由していない）場合は index.html に戻す
   protectPage();
   wireNavLinks();
 
+  // ---- 記念日限定モード ----
+  // START_DATE（付き合った日）の「月日」が今日と一致する日だけ、
+  // 通常ページの手前にフルスクリーンの特別演出を表示する。
+  function isAnniversaryToday(){
+    const today = new Date();
+    return today.getMonth() === START_DATE.getMonth() && today.getDate() === START_DATE.getDate();
+  }
+
+  function initAnniversaryMode(){
+    const overlay = document.getElementById('anniv-overlay');
+    if (!overlay || !isAnniversaryToday()) return;
+
+    const years = new Date().getFullYear() - START_DATE.getFullYear();
+    const yearsLabel = document.getElementById('anniv-years');
+    yearsLabel.textContent = years > 0 ? `${years}周年 ` : '';
+
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    const steps = Array.from(overlay.querySelectorAll('.anniv-step'));
+    let current = 0;
+    let timerId = null;
+
+    function showStep(i){
+      steps.forEach((s, idx) => s.classList.toggle('is-active', idx === i));
+    }
+
+    function nextStep(){
+      current++;
+      if (current >= steps.length) return;
+      showStep(current);
+      if (current < steps.length - 1){
+        timerId = setTimeout(nextStep, 2600);
+      }
+    }
+    timerId = setTimeout(nextStep, 2600);
+
+    function closeOverlay(){
+      if (timerId) clearTimeout(timerId);
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('anniv-skip').addEventListener('click', closeOverlay);
+    document.getElementById('anniv-enter').addEventListener('click', closeOverlay);
+  }
+
   (async () => {
     // content/memories.json を読み込む（管理画面から投稿された内容を反映）
     await loadMemories();
+
+    // ---- 記念日限定モード（付き合った記念日だけ表示） ----
+    initAnniversaryMode();
 
     // ---- タイムラインを自動生成（showInStoryがfalseのものは除外）----
     const timelineEl = document.getElementById('timeline');
@@ -304,6 +517,7 @@
       const side = i % 2 === 0 ? 'left' : 'right';
       const entry = document.createElement('div');
       entry.className = `entry ${side} reveal`;
+      entry.id = 'memory-' + m.date;
       const displayDate = m.date.replaceAll('-', '.');
 
       const photosHtml = m.photos.map(src => `
@@ -323,6 +537,29 @@
       `;
       timelineEl.appendChild(entry);
     });
+
+    // ---- 思い出コンシェルジュから該当の思い出へジャンプする ----
+    window.conciergeScrollToMemory = function(targetId){
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      const navHeight = document.querySelector('.site-nav').offsetHeight;
+      const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+      window.scrollTo({
+        top,
+        behavior: reduceMotionQuery.matches ? 'auto' : 'smooth'
+      });
+      el.classList.add('memory-highlight');
+      setTimeout(() => el.classList.remove('memory-highlight'), 1900);
+    };
+
+    // 他のページからコンシェルジュ経由で来た場合（URLに goto= が付いている場合）は自動でジャンプする
+    const gotoParams = new URLSearchParams(location.hash.slice(1));
+    const gotoTarget = gotoParams.get('goto');
+    if (gotoTarget){
+      setTimeout(() => window.conciergeScrollToMemory(gotoTarget), 500);
+      gotoParams.delete('goto');
+      history.replaceState(null, '', '#' + gotoParams.toString());
+    }
 
     // ---- スクロールで浮かび上がるアニメーション ----
     const io = new IntersectionObserver((entries) => {
@@ -370,6 +607,63 @@
     bgmBtn.classList.toggle('is-playing', isPlaying);
     bgmBtn.setAttribute('aria-pressed', String(isPlaying));
   });
+
+  // ==================================================================
+  // スクロール位置ハイライトナビ（再利用しやすいよう汎用的に実装）
+  // data-target 属性に対応するIDのセクションを IntersectionObserver で監視し、
+  // 画面内に一番大きく表示されているセクションのナビ項目だけをハイライトする。
+  // scroll イベントは使わないので、スクロールが多くても軽量。
+  // ==================================================================
+  function initScrollSpy(navId){
+    const nav = document.getElementById(navId);
+    if (!nav) return;
+
+    const items = Array.from(nav.querySelectorAll('.scrollspy-item'));
+    const sections = items
+      .map(item => ({ item, section: document.getElementById(item.dataset.target) }))
+      .filter(entry => entry.section);
+
+    if (sections.length === 0) return;
+
+    function setActive(id){
+      items.forEach(item => {
+        item.classList.toggle('is-active', item.dataset.target === id);
+      });
+    }
+
+    // クリックでスムーズスクロール（固定ナビの高さぶんオフセットする）
+    sections.forEach(({ item, section }) => {
+      item.addEventListener('click', () => {
+        const navHeight = document.querySelector('.site-nav').offsetHeight
+          + (document.querySelector('.scrollspy-nav').offsetHeight || 0);
+        const top = section.getBoundingClientRect().top + window.scrollY - navHeight - 8;
+        window.scrollTo({
+          top,
+          behavior: reduceMotionQuery.matches ? 'auto' : 'smooth'
+        });
+        setActive(item.dataset.target);
+      });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      // 画面内で一番多く見えているセクションをアクティブにする
+      let mostVisible = null;
+      entries.forEach(entry => {
+        if (entry.isIntersecting){
+          if (!mostVisible || entry.intersectionRatio > mostVisible.intersectionRatio){
+            mostVisible = entry;
+          }
+        }
+      });
+      if (mostVisible) setActive(mostVisible.target.id);
+    }, { threshold: [0.25, 0.5, 0.75], rootMargin: '-15% 0px -15% 0px' });
+
+    sections.forEach(({ section }) => observer.observe(section));
+    setActive(sections[0].item.dataset.target);
+  }
+
+  const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  initScrollSpy('scrollspy-nav');
 </script>
 </body>
 </html>

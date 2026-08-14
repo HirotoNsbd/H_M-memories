@@ -104,6 +104,7 @@
 
 <script src="assets/auth.js"></script>
 <script src="assets/effects.js"></script>
+<script src="assets/transition.js"></script>
 <script>
   const form = document.getElementById('lock-form');
   const input = document.getElementById('lock-input');
@@ -114,7 +115,7 @@
     const hash = simpleHash(normalize(input.value));
 
     if (hash === SECRET_HASH){
-      location.href = 'story.html#key=' + hash;
+      pageTransition('story.html#key=' + hash);
     } else {
       errorEl.textContent = '合言葉が違うみたい…もう一度どうぞ。';
       form.classList.remove('shake');

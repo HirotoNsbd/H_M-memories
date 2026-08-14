@@ -3,12 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Our Story — 統計ページ</title>
+<title>デモ — 統計ページ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="./assets/site.css">
 <style>
+  .demo-nav{ display:flex; align-items:center; justify-content:center; padding:16px 6vw; position:relative; z-index:2; }
+  .demo-nav a{ font-family:var(--font-en); font-style:italic; font-size:0.9rem; color:var(--text-dim); text-decoration:none; }
+  .demo-nav a:hover{ color:var(--gold-soft); }
+  .demo-badge{
+    display:inline-block; margin-top:0.6em;
+    font-family:var(--font-en); font-style:italic; font-size:0.7rem;
+    letter-spacing:0.2em; color:var(--rose);
+    border:1px solid var(--rose); border-radius:20px; padding:3px 12px;
+  }
+
   .stats-header{ text-align:center; padding:4vh 6vw 2vh; position:relative; z-index:2; }
 
   .stats-grid{
@@ -47,35 +57,13 @@
 
 <div class="grain"></div>
 <div class="petals" id="petals" aria-hidden="true"></div>
-<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
-<div class="snow-layer" id="snow-layer" aria-hidden="true"></div>
-<svg class="winter-motif" viewBox="0 0 60 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <!-- 雪だるま（控えめな線画・薄い色味） -->
-  <circle cx="30" cy="50" r="17" fill="#e7eff5"/>
-  <circle cx="30" cy="23" r="11.5" fill="#e7eff5"/>
-  <line x1="17" y1="25" x2="8" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
-  <line x1="43" y1="25" x2="52" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
-  <circle cx="26" cy="21" r="1.3" fill="#5b6472"/>
-  <circle cx="34" cy="21" r="1.3" fill="#5b6472"/>
-  <path d="M30 24 L37 26.5 L30 27.5 Z" fill="#c98a4b"/>
-  <circle cx="30" cy="45" r="1.1" fill="#5b6472"/>
-  <circle cx="30" cy="51" r="1.1" fill="#5b6472"/>
-  <circle cx="30" cy="57" r="1.1" fill="#5b6472"/>
-</svg>
 
-<nav class="site-nav">
-  <a href="story.html" data-nav>Story</a>
-  <a href="calendar.html" data-nav>Calendar</a>
-  <a href="hub.html" data-nav>Hub</a>
-  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
-    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
-  </button>
-  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
-</nav>
+<nav class="demo-nav"><a href="index.html">← デモ一覧に戻る</a></nav>
 
 <div class="stats-header">
   <p class="eyebrow reveal">Our Numbers</p>
   <h2 class="section-title reveal">二人の記録を数字で</h2>
+  <span class="demo-badge reveal">DEMO / 試作品（content/内の実データから集計。読み込めない場合はサンプル値）</span>
 </div>
 
 <div class="stats-grid">
@@ -127,13 +115,8 @@
   </div>
 </div>
 
-<script src="assets/auth.js"></script>
-<script src="assets/effects.js"></script>
-<script src="assets/transition.js"></script>
-<script src="assets/concierge.js"></script>
+<script src="./assets/effects.js"></script>
 <script>
-  protectPage();
-  wireNavLinks();
   // ---- 実データを読み込む（見つからない場合はサンプル値にフォールバック） ----
   async function loadJson(path, fallback){
     try {
@@ -145,34 +128,27 @@
     }
   }
 
-  function animateCount(el, target, suffix = '', duration = 1200){
-    if (target <= 0){
-      el.innerHTML = '0' + (suffix ? `<span class="unit">${suffix}</span>` : '');
-      return;
+  function animateCount(el, target, suffix = '', duration = 1100){
+    const start = performance.now();
+    function frame(now){
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(target * eased);
+      el.innerHTML = value.toLocaleString('ja-JP') + (suffix ? `<span class="unit">${suffix}</span>` : '');
+      if (progress < 1) requestAnimationFrame(frame);
     }
-    // 1つずつ増えていく見た目にする（数字が大きい場合でも重くならないよう最大40段階に区切る）
-    const totalSteps = Math.min(target, 40);
-    const stepDuration = duration / totalSteps;
-    let stepCount = 0;
-
-    const timer = setInterval(() => {
-      stepCount++;
-      let current = Math.round((target * stepCount) / totalSteps);
-      if (stepCount >= totalSteps) current = target;
-      el.innerHTML = current.toLocaleString('ja-JP') + (suffix ? `<span class="unit">${suffix}</span>` : '');
-      if (stepCount >= totalSteps) clearInterval(timer);
-    }, stepDuration);
+    requestAnimationFrame(frame);
   }
 
   (async () => {
-    const memoriesData = await loadJson('content/memories.json', {
+    const memoriesData = await loadJson('./content/memories.json', {
       startDate: '2025-10-04T00:00:00',
       memories: [
         { photos: [null] }, { photos: [null, null, null] }, { photos: [null, null, null, null, null] },
         { photos: [null] }, { photos: [null, null] }, { photos: [null, null] }
       ]
     });
-    const bucketData = await loadJson('content/bucket-list.json', {
+    const bucketData = await loadJson('./content/bucket-list.json', {
       items: [{ done: false }, { done: false }, { done: true }, { done: true }]
     });
 

@@ -100,7 +100,7 @@ export default {
         return new Response('Unauthorized', { status: 401, headers: corsHeaders() });
       }
 
-      const { date, icon, title, comment, photos } = payload;
+      const { date, icon, title, comment, photos, showInStory } = payload;
       if (!date || !title){
         return new Response('date と title は必須です', { status: 400, headers: corsHeaders() });
       }
@@ -132,7 +132,14 @@ export default {
         data = JSON.parse(jsonStr);
       }
 
-      data.memories.push({ icon: icon || '💕', date, title, comment: comment || '', photos: photoPaths });
+      data.memories.push({
+        icon: icon || '💕',
+        date,
+        title,
+        comment: comment || '',
+        showInStory: showInStory !== false,
+        photos: photoPaths
+      });
       // 日付順に並び替え
       data.memories.sort((a, b) => a.date.localeCompare(b.date));
 

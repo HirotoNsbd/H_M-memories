@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>デモ一覧 — 新機能の試作品</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/site.css">
+<style>
+  .demo-header{ text-align:center; padding:8vh 6vw 2vh; position:relative; z-index:2; }
+  .demo-header p.note{
+    max-width:480px; margin:1.2em auto 0; color:var(--text-dim); font-size:0.88rem; line-height:1.9;
+  }
+
+  .demo-grid{
+    max-width:900px; margin:5vh auto 12vh; padding:0 6vw; position:relative; z-index:2;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px;
+  }
+  .demo-tile{
+    display:block; text-decoration:none;
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:12px;
+    padding:28px 22px; text-align:left;
+    transition:border-color 0.2s ease, transform 0.2s ease;
+  }
+  .demo-tile:hover{ border-color:var(--gold); transform:translateY(-3px); }
+  .demo-tile:active{ transform:scale(0.98); }
+  .demo-tile .icon{ font-size:1.6rem; }
+  .demo-tile .name{
+    margin-top:0.7em; font-family:var(--font-jp-serif); font-weight:600;
+    font-size:1.15rem; color:var(--text);
+  }
+  .demo-tile .desc{ margin-top:0.5em; font-size:0.85rem; color:var(--text-dim); line-height:1.8; }
+  .demo-tile .go{
+    margin-top:1em; font-family:var(--font-en); font-style:italic; font-size:0.82rem; color:var(--gold-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+
+<div class="demo-header">
+  <p class="eyebrow reveal">Prototypes</p>
+  <h1 class="section-title reveal">新機能デモ一覧</h1>
+  <p class="note reveal">
+    ここにあるのは、まだ本番サイトには組み込まれていない試作ページです。
+    それぞれ独立して動作するので、気に入ったものだけを選んで本番に反映できます。
+  </p>
+</div>
+
+<div class="demo-grid">
+  <a class="demo-tile reveal" href="memory-quiz.html" style="opacity:0.6;">
+    <div class="icon">🧠</div>
+    <p class="name">思い出クイズ<span style="font-size:0.65rem; color:var(--text-dim); margin-left:8px; font-family:var(--font-en); font-style:italic;">見送り</span></p>
+    <p class="desc">写真や思い出をもとにしたクイズ。一度やると遊ばなくなりそうという理由で今回は見送り。</p>
+    <p class="go">参考として見る →</p>
+  </a>
+
+  <a class="demo-tile reveal" href="bucket-list.html">
+    <div class="icon">📝</div>
+    <p class="name">Bucket List</p>
+    <p class="desc">二人でやりたいことリスト。追加・削除・完了チェックができ、GitHub経由で両端末に共有されます。</p>
+    <p class="go">見てみる →</p>
+  </a>
+
+  <a class="demo-tile reveal" href="day-night-mode.html">
+    <div class="icon">🌗</div>
+    <p class="name">昼夜モード</p>
+    <p class="desc">ボタンひとつで昼と夜の雰囲気に切り替わる配色デモ。</p>
+    <p class="go">見てみる →</p>
+  </a>
+
+  <a class="demo-tile reveal" href="rain-mode.html">
+    <div class="icon">🌧️</div>
+    <p class="name">雨の日モード</p>
+    <p class="desc">静かに降る雨を背景に重ねる、控えめな演出のデモ。</p>
+    <p class="go">見てみる →</p>
+  </a>
+
+  <a class="demo-tile reveal" href="stats.html">
+    <div class="icon">📊</div>
+    <p class="name">統計ページ</p>
+    <p class="desc">写真枚数・日数・Bucket List達成率などをカード形式で表示。</p>
+    <p class="go">見てみる →</p>
+  </a>
+
+  <a class="demo-tile reveal" href="time-capsule.html">
+    <div class="icon">💌</div>
+    <p class="name">タイムカプセル</p>
+    <p class="desc">複数個埋められるタイムカプセル（未開封3個まで）。片方が埋め、もう片方が開封できます。</p>
+    <p class="go">見てみる →</p>
+  </a>
+</div>
+
+<script src="./assets/effects.js"></script>
+</body>
+</html>
