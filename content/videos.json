@@ -1,0 +1,92 @@
+{
+  "videos": [
+    {
+      "id": "nomal-day-1",
+      "title": "とある日のドンキホーテ",
+      "date": "2026-08-04",
+      "type": "youtube",
+      "src": "y4tx_0gw9_o",
+      "comment": "ゲームに夢中なみーちゃん"
+    },
+    {
+      "id": "nomal-day-2",
+      "title": "Face-to-Face",
+      "date": "2026-04-09",
+      "type": "youtube",
+      "src": "anuKiXlYmiI",
+      "comment": "土下座をする彼氏と笑いすぎな彼女"
+    },
+    {
+      "id": "nomal-day-3",
+      "title": "数学の校外学習",
+      "date": "2025-01-13",
+      "type": "youtube",
+      "src": "R7lra5ZvIQU",
+      "comment": "西君に何をさせてるんや"
+    },
+    {
+      "id": "school-festival",
+      "title": "キッレキッレな彼氏君",
+      "date": "2025-09-28",
+      "type": "youtube",
+      "src": "VssOc7auQZ8",
+      "comment": "ある意味ホラー"
+    },
+    {
+      "id": "dance-tournament",
+      "title": "とあるダンス大会の出来事",
+      "date": "2025-06-15",
+      "type": "youtube",
+      "src": "WpoV44KyBFs",
+      "comment": ""
+    },
+    {
+      "id": "date-1",
+      "title": "ピーナッツ！！！",
+      "date": "2025-06-01",
+      "type": "youtube",
+      "src": "MXUEg1g-3Yk",
+      "comment": "🥜🥜🥜🥜🥜"
+    },
+    {
+      "id": "date-2",
+      "title": "照れてるみつきちゃん",
+      "date": "2025-06-01",
+      "type": "youtube",
+      "src": "mdYz1lmsPk8",
+      "comment": "今日もかわいいね♡"
+    },
+    {
+      "id": "dance-1",
+      "title": "みんなでダンス🪩",
+      "date": "2025-04-24",
+      "type": "youtube",
+      "src": "cvF76fOg7JY",
+      "comment": "クッキークリームはおいしいよ"
+    },
+    {
+      "id": "dance-0",
+      "title": "ノリノリダンス！！",
+      "date": "2025-03-09",
+      "type": "youtube",
+      "src": "Z63RGhN8r8o",
+      "comment": ""
+    },
+    {
+      "id": "edit-1",
+      "title": "２０２５Recap",
+      "date": "2026-01-02",
+      "type": "youtube",
+      "src": "rSiIOk5Sl3M",
+      "comment": ""
+    },
+    {
+      "id": "mt-takao",
+      "title": "高尾さん山頂",
+      "date": "2025-12-05",
+      "type": "youtube",
+      "src": "svPAnCIeMSk",
+      "comment": ""
+    }
+  ]
+}
