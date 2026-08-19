@@ -53,12 +53,21 @@
     margin-top:0.2em;
     letter-spacing:0.15em;
   }
-  /* 年月をタップすると、ネイティブの月選択UIが開く（見た目上は透明に重ねている） */
-  .cal-month-picker{
-    position:absolute; inset:0;
-    opacity:0; cursor:pointer;
-    width:100%; height:100%;
+  /* 年月をタップすると、年・月をプルダウンで選べる小さなパネルが開く */
+  .cal-month-popover{
+    position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    margin-top:10px; z-index:20;
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:10px;
+    padding:12px; display:none; gap:8px;
+    box-shadow:0 16px 36px rgba(0,0,0,0.45);
   }
+  .cal-month-popover.is-open{ display:flex; }
+  .cal-month-popover select{
+    background:var(--ink-soft); border:1px solid var(--line); color:var(--text);
+    font-family:var(--font-jp-sans); font-size:0.88rem; padding:8px 10px; border-radius:6px;
+    cursor:pointer;
+  }
+  .cal-month-popover select:focus{ outline:none; border-color:var(--gold); }
 
   .cal-today-row{
     display:flex; justify-content:center; margin:-0.8em 0 1.6em;
@@ -175,7 +184,10 @@
     <button class="cal-nav-btn" id="cal-prev" aria-label="前の月">←</button>
     <p class="cal-month-label" id="cal-month-label">
       <span id="cal-month-label-text"></span>
-      <input type="month" class="cal-month-picker" id="cal-month-picker" aria-label="年月を直接選ぶ">
+      <span class="cal-month-popover" id="cal-month-popover">
+        <select id="cal-year-select" aria-label="年を選ぶ"></select>
+        <select id="cal-month-select" aria-label="月を選ぶ"></select>
+      </span>
     </p>
     <button class="cal-nav-btn" id="cal-next" aria-label="次の月">→</button>
   </div>
@@ -220,7 +232,9 @@
 
   const grid = document.getElementById('cal-grid');
   const monthLabelText = document.getElementById('cal-month-label-text');
-  const monthPicker = document.getElementById('cal-month-picker');
+  const monthPopover = document.getElementById('cal-month-popover');
+  const yearSelect = document.getElementById('cal-year-select');
+  const monthSelect = document.getElementById('cal-month-select');
   const DOW = ['日','月','火','水','木','金','土'];
   const MONTH_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -229,7 +243,8 @@
   function renderCalendar(){
     grid.innerHTML = '';
     monthLabelText.innerHTML = `${viewYear}年 ${viewMonth + 1}月<span class="en">${MONTH_EN[viewMonth]} ${viewYear}</span>`;
-    monthPicker.value = `${viewYear}-${pad(viewMonth + 1)}`;
+    yearSelect.value = String(viewYear);
+    monthSelect.value = String(viewMonth + 1);
 
     DOW.forEach(d => {
       const el = document.createElement('div');
@@ -287,14 +302,39 @@
     renderCalendar();
   });
 
-  // ---- 年月を直接選ぶ（ネイティブの月選択UI） ----
-  monthPicker.addEventListener('change', () => {
-    if (!monthPicker.value) return;
-    const [y, m] = monthPicker.value.split('-').map(Number);
-    viewYear = y;
-    viewMonth = m - 1;
-    renderCalendar();
-  });
+  // ---- 年月を直接選ぶ（年・月のプルダウン） ----
+  // input[type="month"] はSafari等で使えないブラウザがあるため、
+  // どのブラウザでも確実に動くプルダウン形式にしている。
+  (function initMonthPopover(){
+    const thisYear = new Date().getFullYear();
+    for (let y = thisYear - 5; y <= thisYear + 5; y++){
+      const opt = document.createElement('option');
+      opt.value = String(y);
+      opt.textContent = y + '年';
+      yearSelect.appendChild(opt);
+    }
+    for (let m = 1; m <= 12; m++){
+      const opt = document.createElement('option');
+      opt.value = String(m);
+      opt.textContent = m + '月';
+      monthSelect.appendChild(opt);
+    }
+
+    document.getElementById('cal-month-label-text').addEventListener('click', (e) => {
+      e.stopPropagation();
+      monthPopover.classList.toggle('is-open');
+    });
+    monthPopover.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', () => monthPopover.classList.remove('is-open'));
+
+    function applySelection(){
+      viewYear = Number(yearSelect.value);
+      viewMonth = Number(monthSelect.value) - 1;
+      renderCalendar();
+    }
+    yearSelect.addEventListener('change', applySelection);
+    monthSelect.addEventListener('change', applySelection);
+  })();
 
   // ---- モーダル ----
   const backdrop = document.getElementById('modal-backdrop');
