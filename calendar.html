@@ -39,6 +39,9 @@
     font-weight:600;
     font-size:1.3rem;
     letter-spacing:0.05em;
+    cursor:pointer;
+    position:relative;
+    display:inline-block;
   }
   .cal-month-label .en{
     display:block;
@@ -50,6 +53,23 @@
     margin-top:0.2em;
     letter-spacing:0.15em;
   }
+  /* 年月をタップすると、ネイティブの月選択UIが開く（見た目上は透明に重ねている） */
+  .cal-month-picker{
+    position:absolute; inset:0;
+    opacity:0; cursor:pointer;
+    width:100%; height:100%;
+  }
+
+  .cal-today-row{
+    display:flex; justify-content:center; margin:-0.8em 0 1.6em;
+  }
+  .cal-today-btn{
+    font-family:var(--font-en); font-style:italic; font-size:0.8rem;
+    color:var(--text-dim); background:none; border:1px solid var(--line);
+    border-radius:99px; padding:5px 16px; cursor:pointer;
+    transition:color 0.2s ease, border-color 0.2s ease;
+  }
+  .cal-today-btn:hover{ color:var(--gold-soft); border-color:var(--gold); }
 
   .cal-grid{
     display:grid;
@@ -153,8 +173,15 @@
 
   <div class="cal-nav reveal">
     <button class="cal-nav-btn" id="cal-prev" aria-label="前の月">←</button>
-    <p class="cal-month-label" id="cal-month-label"></p>
+    <p class="cal-month-label" id="cal-month-label">
+      <span id="cal-month-label-text"></span>
+      <input type="month" class="cal-month-picker" id="cal-month-picker" aria-label="年月を直接選ぶ">
+    </p>
     <button class="cal-nav-btn" id="cal-next" aria-label="次の月">→</button>
+  </div>
+
+  <div class="cal-today-row reveal">
+    <button class="cal-today-btn" id="cal-today">今日へ</button>
   </div>
 
   <div class="cal-grid" id="cal-grid"></div>
@@ -192,7 +219,8 @@
   let viewMonth;
 
   const grid = document.getElementById('cal-grid');
-  const monthLabel = document.getElementById('cal-month-label');
+  const monthLabelText = document.getElementById('cal-month-label-text');
+  const monthPicker = document.getElementById('cal-month-picker');
   const DOW = ['日','月','火','水','木','金','土'];
   const MONTH_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -200,7 +228,8 @@
 
   function renderCalendar(){
     grid.innerHTML = '';
-    monthLabel.innerHTML = `${viewYear}年 ${viewMonth + 1}月<span class="en">${MONTH_EN[viewMonth]} ${viewYear}</span>`;
+    monthLabelText.innerHTML = `${viewYear}年 ${viewMonth + 1}月<span class="en">${MONTH_EN[viewMonth]} ${viewYear}</span>`;
+    monthPicker.value = `${viewYear}-${pad(viewMonth + 1)}`;
 
     DOW.forEach(d => {
       const el = document.createElement('div');
@@ -247,6 +276,23 @@
   document.getElementById('cal-next').addEventListener('click', () => {
     viewMonth++;
     if (viewMonth > 11){ viewMonth = 0; viewYear++; }
+    renderCalendar();
+  });
+
+  // ---- 今日へボタン ----
+  document.getElementById('cal-today').addEventListener('click', () => {
+    const today = new Date();
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    renderCalendar();
+  });
+
+  // ---- 年月を直接選ぶ（ネイティブの月選択UI） ----
+  monthPicker.addEventListener('change', () => {
+    if (!monthPicker.value) return;
+    const [y, m] = monthPicker.value.split('-').map(Number);
+    viewYear = y;
+    viewMonth = m - 1;
     renderCalendar();
   });
 
