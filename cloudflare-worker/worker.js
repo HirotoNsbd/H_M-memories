@@ -252,7 +252,9 @@ export default {
         return errorResponse('Unauthorized', 401);
       }
 
-      const path = new URL(request.url).pathname;
+      // 末尾のスラッシュや連続スラッシュがあっても正しく振り分けられるようにする
+      const rawPath = new URL(request.url).pathname;
+      const path = ('/' + rawPath.split('/').filter(Boolean).join('/')).replace(/\/$/, '') || '/';
       switch (path){
         case '/bucket/add':    return await handleBucketAdd(env, payload);
         case '/bucket/toggle': return await handleBucketToggle(env, payload);
