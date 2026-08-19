@@ -1,24 +1,32 @@
 /* ==================================================================
-   memory-site 用 Cloudflare Worker
+   memory-site 用 Cloudflare Worker（統合版）
    ------------------------------------------------------------------
    役割：
-   - admin.html から送られてきた「日付・タイトル・コメント・写真」を受け取り
-   - 写真を GitHub リポジトリの photos/ フォルダに保存
-   - content/memories.json に新しい思い出を追記して保存
-   （どちらも GitHub の Contents API を使い、自動でコミットされます）
+   - admin.html        → 思い出（写真・日付・コメント）の追加
+   - bucket-list.html  → Bucket List の追加・完了切替・削除
+   - time-capsule.html → タイムカプセルの追加・開封
 
-   必要な環境変数（Cloudflare Workers の「設定 > 変数とシークレット」で登録）：
-   - GITHUB_TOKEN   : GitHub の Personal Access Token（対象リポジトリへの書き込み権限が必要）
-   - GITHUB_OWNER   : GitHubのユーザー名（例: taro-yamada）
-   - GITHUB_REPO    : リポジトリ名（例: our-memory-site）
+   どの機能も同じ仕組みです：GitHubのContents APIを使って、
+   リポジトリの中のJSONファイルを読み書きし、自動でコミットします。
+
+   必要な環境変数（Cloudflare Workers の「設定 > 変数とシークレット」）：
+   - GITHUB_TOKEN   : GitHubのPersonal Access Token（対象リポジトリへの書き込み権限）
+   - GITHUB_OWNER   : GitHubのユーザー名
+   - GITHUB_REPO    : リポジトリ名
    - GITHUB_BRANCH  : 対象ブランチ名（通常は "main"）
-   - ADMIN_SECRET   : admin.html 側の合言葉ハッシュと一致させる文字列
-                      （assets/auth.js の SECRET_HASH と同じ値を入れてください。
-                        auth.js を開いてブラウザのコンソールで SECRET_HASH を
-                        出力すれば値が確認できます）
+   - ADMIN_SECRET   : assets/auth.js の SECRET_HASH と同じ値
+
+   URLのパスでどの機能か振り分けます：
+   - POST /memory        … 思い出を追加（admin.html用。今まで通り）
+   - POST /bucket/add     … Bucket List項目を追加
+   - POST /bucket/toggle  … 完了状態を切り替え
+   - POST /bucket/delete  … 項目を削除
+   - POST /capsule/add    … タイムカプセルを追加（未開封3個までの制限あり）
+   - POST /capsule/open   … タイムカプセルを開封
    ================================================================== */
 
 const GITHUB_API = 'https://api.github.com';
+const MAX_PENDING_CAPSULES = 3; // 同時に埋められるタイムカプセルの上限（開封すれば枠が空く）
 
 function corsHeaders(){
   return {
@@ -28,9 +36,20 @@ function corsHeaders(){
   };
 }
 
+function jsonResponse(obj, status = 200){
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders() }
+  });
+}
+
+function errorResponse(message, status = 400){
+  return jsonResponse({ ok: false, error: message }, status);
+}
+
 async function githubRequest(env, path, options = {}){
   const url = `${GITHUB_API}/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${path}`;
-  const res = await fetch(url, {
+  return fetch(url, {
     ...options,
     headers: {
       'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
@@ -39,7 +58,6 @@ async function githubRequest(env, path, options = {}){
       ...(options.headers || {})
     }
   });
-  return res;
 }
 
 async function getFile(env, path){
@@ -50,19 +68,13 @@ async function getFile(env, path){
 }
 
 async function putFile(env, path, contentBase64, message, sha){
-  const body = {
-    message,
-    content: contentBase64,
-    branch: env.GITHUB_BRANCH || 'main'
-  };
+  const body = { message, content: contentBase64, branch: env.GITHUB_BRANCH || 'main' };
   if (sha) body.sha = sha;
-
   const res = await githubRequest(env, path, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-
   if (!res.ok){
     const errBody = await res.text();
     throw new Error(`GitHub保存エラー (${path}): ${res.status} ${errBody}`);
@@ -70,11 +82,6 @@ async function putFile(env, path, contentBase64, message, sha){
   return res.json();
 }
 
-function sanitizeFilename(name){
-  return name.replace(/[^a-zA-Z0-9._-]/g, '_');
-}
-
-// UTF-8文字列をBase64に変換（日本語のコメント等が含まれるため）
 function utf8ToBase64(str){
   const bytes = new TextEncoder().encode(str);
   let binary = '';
@@ -82,77 +89,181 @@ function utf8ToBase64(str){
   return btoa(binary);
 }
 
+function base64ToUtf8(base64){
+  const decoded = atob(base64.replace(/\n/g, ''));
+  return new TextDecoder().decode(Uint8Array.from(decoded, c => c.charCodeAt(0)));
+}
+
+function sanitizeFilename(name){
+  return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
+function makeId(){
+  return (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+}
+
+// JSONファイルを読み込み → mutator で書き換え → 保存、をまとめて行う共通処理
+async function updateJsonFile(env, path, defaultData, mutator, commitMessage){
+  const existing = await getFile(env, path);
+  let data = defaultData;
+  if (existing){
+    data = JSON.parse(base64ToUtf8(existing.content));
+  }
+  const result = mutator(data);
+  if (result && result.error){
+    return { error: result.error };
+  }
+  const newContentBase64 = utf8ToBase64(JSON.stringify(data, null, 2));
+  await putFile(env, path, newContentBase64, commitMessage, existing ? existing.sha : undefined);
+  return { data };
+}
+
+/* ---------------- 思い出（admin.html） ---------------- */
+async function handleMemoryAdd(env, payload){
+  const { date, icon, title, comment, photos, showInStory } = payload;
+  if (!date || !title) return errorResponse('date と title は必須です');
+
+  const photoPaths = [];
+  if (Array.isArray(photos)){
+    for (let i = 0; i < photos.length; i++){
+      const photo = photos[i];
+      if (!photo || !photo.contentBase64) continue;
+      const safeName = sanitizeFilename(photo.filename || `photo-${i}.jpg`);
+      const path = `photos/${date}-${Date.now()}-${i}-${safeName}`;
+      await putFile(env, path, photo.contentBase64, `Add photo for ${title}`);
+      photoPaths.push(path);
+    }
+  }
+  if (photoPaths.length === 0) photoPaths.push(null);
+
+  const { error } = await updateJsonFile(
+    env,
+    'content/memories.json',
+    { startDate: date + 'T00:00:00', memories: [] },
+    (data) => {
+      data.memories.push({
+        icon: icon || '💕', date, title, comment: comment || '',
+        showInStory: showInStory !== false, photos: photoPaths
+      });
+      data.memories.sort((a, b) => a.date.localeCompare(b.date));
+    },
+    `Add memory: ${title}`
+  );
+  if (error) return errorResponse(error);
+  return jsonResponse({ ok: true, photos: photoPaths });
+}
+
+/* ---------------- Bucket List ---------------- */
+async function handleBucketAdd(env, payload){
+  const { text } = payload;
+  if (!text || !text.trim()) return errorResponse('textは必須です');
+
+  const { error } = await updateJsonFile(
+    env, 'content/bucket-list.json', { items: [] },
+    (data) => { data.items.push({ id: makeId(), text: text.trim(), done: false, createdAt: new Date().toISOString() }); },
+    `Add bucket item: ${text.trim()}`
+  );
+  if (error) return errorResponse(error);
+  return jsonResponse({ ok: true });
+}
+
+async function handleBucketToggle(env, payload){
+  const { id } = payload;
+  if (!id) return errorResponse('idは必須です');
+
+  const { error } = await updateJsonFile(
+    env, 'content/bucket-list.json', { items: [] },
+    (data) => {
+      const item = data.items.find(i => i.id === id);
+      if (!item) return { error: '項目が見つかりません' };
+      item.done = !item.done;
+    },
+    `Toggle bucket item: ${id}`
+  );
+  if (error) return errorResponse(error);
+  return jsonResponse({ ok: true });
+}
+
+async function handleBucketDelete(env, payload){
+  const { id } = payload;
+  if (!id) return errorResponse('idは必須です');
+
+  const { error } = await updateJsonFile(
+    env, 'content/bucket-list.json', { items: [] },
+    (data) => { data.items = data.items.filter(i => i.id !== id); },
+    `Delete bucket item: ${id}`
+  );
+  if (error) return errorResponse(error);
+  return jsonResponse({ ok: true });
+}
+
+/* ---------------- タイムカプセル ---------------- */
+async function handleCapsuleAdd(env, payload){
+  const { unlockDate, message, author } = payload;
+  if (!unlockDate || !message) return errorResponse('unlockDateとmessageは必須です');
+
+  const { error } = await updateJsonFile(
+    env, 'content/time-capsules.json', { capsules: [] },
+    (data) => {
+      const pendingCount = data.capsules.filter(c => !c.opened).length;
+      if (pendingCount >= MAX_PENDING_CAPSULES){
+        return { error: `タイムカプセルは同時に${MAX_PENDING_CAPSULES}個までしか埋められません。開封してからまた埋めてください。` };
+      }
+      data.capsules.push({
+        id: makeId(), unlockDate, message, author: author || '',
+        opened: false, createdAt: new Date().toISOString()
+      });
+    },
+    `Add time capsule (unlock: ${unlockDate})`
+  );
+  if (error) return errorResponse(error);
+  return jsonResponse({ ok: true });
+}
+
+async function handleCapsuleOpen(env, payload){
+  const { id } = payload;
+  if (!id) return errorResponse('idは必須です');
+
+  const { error } = await updateJsonFile(
+    env, 'content/time-capsules.json', { capsules: [] },
+    (data) => {
+      const capsule = data.capsules.find(c => c.id === id);
+      if (!capsule) return { error: 'カプセルが見つかりません' };
+      if (new Date(capsule.unlockDate) > new Date()) return { error: 'まだ開封日を迎えていません' };
+      capsule.opened = true;
+      capsule.openedAt = new Date().toISOString();
+    },
+    `Open time capsule: ${id}`
+  );
+  if (error) return errorResponse(error);
+  return jsonResponse({ ok: true });
+}
+
+/* ---------------- ルーティング ---------------- */
 export default {
   async fetch(request, env){
-    if (request.method === 'OPTIONS'){
-      return new Response(null, { headers: corsHeaders() });
-    }
-
-    if (request.method !== 'POST'){
-      return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
-    }
+    if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders() });
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
 
     try {
       const payload = await request.json();
 
-      // ---- 簡易認証（サイトの合言葉ハッシュと一致するか確認）----
       if (!env.ADMIN_SECRET || payload.secret !== env.ADMIN_SECRET){
-        return new Response('Unauthorized', { status: 401, headers: corsHeaders() });
+        return errorResponse('Unauthorized', 401);
       }
 
-      const { date, icon, title, comment, photos, showInStory } = payload;
-      if (!date || !title){
-        return new Response('date と title は必須です', { status: 400, headers: corsHeaders() });
+      const path = new URL(request.url).pathname;
+      switch (path){
+        case '/bucket/add':    return await handleBucketAdd(env, payload);
+        case '/bucket/toggle': return await handleBucketToggle(env, payload);
+        case '/bucket/delete': return await handleBucketDelete(env, payload);
+        case '/capsule/add':   return await handleCapsuleAdd(env, payload);
+        case '/capsule/open':  return await handleCapsuleOpen(env, payload);
+        case '/memory':
+        default:                return await handleMemoryAdd(env, payload);
       }
-
-      // ---- 1. 写真をアップロード ----
-      const photoPaths = [];
-      if (Array.isArray(photos)){
-        for (let i = 0; i < photos.length; i++){
-          const photo = photos[i];
-          if (!photo || !photo.contentBase64) continue;
-          const safeName = sanitizeFilename(photo.filename || `photo-${i}.jpg`);
-          const path = `photos/${date}-${Date.now()}-${i}-${safeName}`;
-          await putFile(env, path, photo.contentBase64, `Add photo for ${title}`);
-          photoPaths.push(path);
-        }
-      }
-      if (photoPaths.length === 0) photoPaths.push(null);
-
-      // ---- 2. content/memories.json を取得・更新 ----
-      const dataPath = 'content/memories.json';
-      const existing = await getFile(env, dataPath);
-
-      let data = { startDate: date + 'T00:00:00', memories: [] };
-      if (existing){
-        const decoded = atob(existing.content.replace(/\n/g, ''));
-        const jsonStr = new TextDecoder().decode(
-          Uint8Array.from(decoded, c => c.charCodeAt(0))
-        );
-        data = JSON.parse(jsonStr);
-      }
-
-      data.memories.push({
-        icon: icon || '💕',
-        date,
-        title,
-        comment: comment || '',
-        showInStory: showInStory !== false,
-        photos: photoPaths
-      });
-      // 日付順に並び替え
-      data.memories.sort((a, b) => a.date.localeCompare(b.date));
-
-      const newContentBase64 = utf8ToBase64(JSON.stringify(data, null, 2));
-      await putFile(env, dataPath, newContentBase64, `Add memory: ${title}`, existing ? existing.sha : undefined);
-
-      return new Response(JSON.stringify({ ok: true, photos: photoPaths }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-      });
-
     } catch (err) {
-      return new Response('エラー: ' + err.message, { status: 500, headers: corsHeaders() });
+      return errorResponse('エラー: ' + err.message, 500);
     }
   }
 };
