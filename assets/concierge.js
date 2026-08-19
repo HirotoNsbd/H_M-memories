@@ -15,7 +15,7 @@
   /* ▼ ここにアイコン用の写真ファイルを指定してください
      例: photos/concierge-icon.jpg のように、写真を photos フォルダに置いてパスを書く。
      指定した画像が見つからない場合は、自動的に元のイラストに戻ります。 */
-  const CONCIERGE_ICON_PATH = 'photos/concierge-icon.jpg';
+  const CONCIERGE_ICON_PATH = 'photos/Ikea.avif';
 
   let memoriesCache = null;
   let panelInitialized = false;
@@ -128,19 +128,19 @@
     const q = normalize(text);
 
     if (memories.length === 0){
-      addMessage('まだ思い出が登録されていないみたいです。');
+      addMessage('まだ思い出が登録されていないみたいワン…');
       return;
     }
 
     if (q.includes('おすすめ') || q.includes('おまかせ')){
       const pick = memories[Math.floor(Math.random() * memories.length)];
-      addResultGroup('今日はこの思い出がおすすめです😊', [pick]);
+      addResultGroup('今日はこの思い出がおすすめワン🐾😊', [pick]);
       return;
     }
 
     const results = searchMemories(text, memories);
     addResultGroup(
-      results.length > 0 ? `${results.length}件、見つかりました😊` : '思い出が見つかりませんでした…別のキーワードを試してみてください。',
+      results.length > 0 ? `${results.length}件、見つけてきたワン🐾😊` : '見つからなかったワン…別のキーワードを試してみてワン🐾',
       results
     );
   }
@@ -187,7 +187,7 @@
     panelEl.className = 'concierge-panel';
     panelEl.innerHTML = `
       <div class="concierge-header">
-        <p class="title"><span class="dot"></span>思い出コンシェルジュ</p>
+        <p class="title"><span class="dot"></span>思い出コンシェルジュ🐾</p>
         <button class="concierge-close" type="button" aria-label="閉じる">✕</button>
       </div>
       <div class="concierge-log" id="concierge-log"></div>
@@ -207,7 +207,7 @@
       openPanel();
       if (!panelInitialized){
         panelInitialized = true;
-        addMessage('こんにちは😊\n思い出を探すお手伝いをします。\n例えば…\n・初デート\n・ディズニー\n・旅行\n・誕生日\nなどと入力してみてください。\n\n「おすすめ」と入力すると、ランダムで一件ご紹介します。');
+        addMessage('こんにちは、ワン🐾\n思い出を探すお手伝いをするワン！\n例えば…\n・初デート\n・ディズニー\n・旅行\n・誕生日\nなどと入力してみてワン！\n\n「おすすめ」と言ってくれたら、ランダムで一件持ってくるワン🐾');
       }
     });
     panelEl.querySelector('.concierge-close').addEventListener('click', closePanel);

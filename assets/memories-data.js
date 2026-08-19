@@ -10,9 +10,9 @@
 // 初期データ（content/memories.json が読み込めなかった場合のフォールバック）
 const FALLBACK_START_DATE = '2025-10-04T00:00:00';
 const FALLBACK_MEMORIES = [
-  { icon: '🎉', date: '2025-10-04', title: '付き合った日', comment: '付き合ってくれてありがとう。', photos: [null], showInStory: true },
+  { icon: '🎉', date: '2024-10-04', title: '付き合った日', comment: '付き合ってくれてありがとう。', photos: ['photos/story/first-day.jpg'], showInStory: true },
+  { icon: '🏰', date: '2024-12-21', title: 'ディズニーランド', comment: '朝から夜まで遊んだ最高の一日。', photos: ["photos/story/TDL-24(1).jpeg","photos/story/TDL-24(2).jpeg","photos/story/TDL-24(3).jpeg"], showInStory: true },
   { icon: '🎄', date: '2025-12-24', title: 'はじめてのクリスマス', comment: '二人で過ごす初めての冬。', photos: [null, null, null], showInStory: true },
-  { icon: '🏰', date: '2026-01-02', title: 'ディズニーランド', comment: '朝から夜まで遊んだ最高の一日。', photos: [null, null, null, null, null], showInStory: true },
   { icon: '💯', date: '2026-01-12', title: '付き合って100日', comment: 'これからもよろしくね。', photos: [null], showInStory: true },
   { icon: '🍽️', date: '2026-03-20', title: 'はじめて二人で行ったお店', comment: '', photos: [null, null], showInStory: true },
   { icon: '🌸', date: '2026-04-10', title: '誕生日', comment: 'おめでとう、大好きだよ。', photos: [null, null], showInStory: true }

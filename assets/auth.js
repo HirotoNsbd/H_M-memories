@@ -8,7 +8,7 @@
 
    ▼ 合言葉を変更したいときは、下の SECRET_WORD を書き換えてください。
    ================================================================== */
-const SECRET_WORD = 'ことば'; // ← ここを二人の合言葉に変更してください
+const SECRET_WORD = '国分寺駅'; // ← ここを二人の合言葉に変更してください
 
 function normalize(str){
   return str.trim().toLowerCase();
