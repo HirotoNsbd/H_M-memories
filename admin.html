@@ -74,7 +74,7 @@
     overflow:hidden;
     position:relative;
   }
-  .preview-item img{ width:100%; height:100%; object-fit:cover; }
+  .preview-item img{ width:100%; height:100%; object-fit:cover; image-orientation:from-image; }
   .preview-remove{
     position:absolute; top:2px; right:2px;
     width:20px; height:20px;
@@ -215,6 +215,8 @@
         <button type="button" class="icon-btn" data-icon="✈️">✈️</button>
         <button type="button" class="icon-btn" data-icon="🎂">🎂</button>
         <button type="button" class="icon-btn" data-icon="❤️">❤️</button>
+        <button type="button" class="icon-btn" data-icon="❄️">❄️</button>
+        <button type="button" class="icon-btn" data-icon="🌊">🌊</button>
       </div>
     </div>
 
@@ -264,7 +266,6 @@
   <p class="config-note">
     ※ このページから投稿すると、裏側のプログラムが自動的にGitHubへ保存し、
     数分後にサイトへ反映されます。<br>
-    初回セットアップが済んでいない場合は SETUP.md を確認してください。
   </p>
 </section>
 
@@ -281,7 +282,7 @@
      （SETUP.md の手順で Cloudflare Workers にデプロイした後のURLです）
      例: const WORKER_URL = 'https://memory-site-admin.your-name.workers.dev';
      ================================================================ */
-  const WORKER_URL = 'https://REPLACE-ME.workers.dev';
+  const WORKER_URL = 'https://purple-night-2ef2.e2607439.workers.dev/';
 
   const iconPicker = document.getElementById('icon-picker');
   let selectedIcon = '🎉';
@@ -410,6 +411,17 @@
       submitBtn.disabled = false;
     }
   });
+
+  // ---- スクロールで浮かび上がるアニメーション ----
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 </body>
 </html>

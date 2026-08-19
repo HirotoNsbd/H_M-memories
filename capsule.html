@@ -193,7 +193,7 @@
      admin.htmlと同じWorkerのURLを設定してください。
      未設定のままだと、この端末の中だけで完結するローカルモードで動きます。
      ================================================================ */
-  const WORKER_URL = 'https://REPLACE-ME.workers.dev';
+  const WORKER_URL = 'https://purple-night-2ef2.e2607439.workers.dev/';
   const SYNC_ENABLED = !WORKER_URL.includes('REPLACE-ME');
   const MAX_PENDING = 3; // 同時に埋められる未開封カプセルの上限（worker.js側と合わせています）
 
@@ -227,8 +227,8 @@
       capsules = [{
         id: 'local-1',
         unlockDate: '2027-10-04T00:00:00',
-        message: 'このタイムカプセルを開けているということは、あの日からまた一つ、二人の時間が積み重なったということですね。',
-        author: 'Hiroto',
+        message: 'このタイムカプセルを開けているということは、あの日からまた一つ、二人の時間が積み重なったということですね。おめでとうございます。',
+        author: 'Anonymous',
         opened: false
       }];
       setSyncStatus('データを読み込めなかったため、サンプルを表示しています', false);

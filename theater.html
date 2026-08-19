@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story — 展示室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .theater-header{ text-align:center; padding:8vh 6vw 2vh; position:relative; z-index:2; }
+  .theater-header p.note{
+    max-width:460px; margin:1.2em auto 0; color:var(--text-dim); font-size:0.88rem; line-height:1.9;
+  }
+
+  .theater-grid{
+    max-width:960px; margin:5vh auto 12vh; padding:0 6vw; position:relative; z-index:2;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px;
+  }
+  .video-card{
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; cursor:pointer; text-align:left;
+    transition:border-color 0.2s ease, transform 0.2s ease;
+  }
+  .video-card:hover{ border-color:var(--gold); transform:translateY(-3px); }
+  .video-card:active{ transform:scale(0.98); }
+
+  .video-thumb{
+    width:100%; aspect-ratio:16/9; background:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); font-size:1.6rem; position:relative; overflow:hidden;
+  }
+  .video-thumb img{ width:100%; height:100%; object-fit:cover; }
+  .video-thumb .play-mark{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(8,9,14,0.25); color:var(--paper); font-size:1.6rem;
+  }
+
+  .video-info{ padding:14px 16px; }
+  .video-info .v-title{ font-family:var(--font-jp-serif); font-weight:600; font-size:1rem; color:var(--text); }
+  .video-info .v-date{ margin-top:0.3em; font-family:var(--font-en); font-style:italic; font-size:0.78rem; color:var(--text-dim); }
+  .video-info .v-comment{ margin-top:0.6em; font-size:0.82rem; color:var(--text-dim); line-height:1.7; }
+
+  .empty-msg{ text-align:center; color:var(--text-dim); font-size:0.9rem; padding:6vh 0; }
+
+  /* ---- 再生モーダル ---- */
+  .video-modal-backdrop{
+    position:fixed; inset:0; z-index:60;
+    background:rgba(8,9,14,0.85); backdrop-filter:blur(4px);
+    display:none; align-items:center; justify-content:center; padding:6vw;
+  }
+  .video-modal-backdrop.is-open{ display:flex; }
+  .video-modal{
+    width:100%; max-width:760px;
+    background:var(--ink-alt); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; position:relative;
+  }
+  .video-modal-close{
+    position:absolute; top:10px; right:12px; z-index:2;
+    background:rgba(8,9,14,0.6); border:none; color:var(--text);
+    width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1rem;
+  }
+  .video-modal-player{ width:100%; aspect-ratio:16/9; background:#000; }
+  .video-modal-player iframe, .video-modal-player video{ width:100%; height:100%; display:block; }
+  .video-modal-caption{ padding:16px 18px; }
+  .video-modal-caption .v-title{ font-family:var(--font-jp-serif); font-weight:600; font-size:1.05rem; color:var(--text); }
+  .video-modal-caption .v-date{ margin-top:0.3em; font-family:var(--font-en); font-style:italic; font-size:0.8rem; color:var(--text-dim); }
+  .video-modal-caption .v-comment{ margin-top:0.7em; font-size:0.85rem; color:var(--text-dim); line-height:1.8; }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="petals" id="petals" aria-hidden="true"></div>
+<div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+<div class="snow-layer" id="snow-layer" aria-hidden="true"></div>
+<svg class="winter-motif" viewBox="0 0 60 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="30" cy="50" r="17" fill="#e7eff5"/>
+  <circle cx="30" cy="23" r="11.5" fill="#e7eff5"/>
+  <line x1="17" y1="25" x2="8" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="43" y1="25" x2="52" y2="18" stroke="#cfe0ec" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="26" cy="21" r="1.3" fill="#5b6472"/>
+  <circle cx="34" cy="21" r="1.3" fill="#5b6472"/>
+  <path d="M30 24 L37 26.5 L30 27.5 Z" fill="#c98a4b"/>
+  <circle cx="30" cy="45" r="1.1" fill="#5b6472"/>
+  <circle cx="30" cy="51" r="1.1" fill="#5b6472"/>
+  <circle cx="30" cy="57" r="1.1" fill="#5b6472"/>
+</svg>
+
+<nav class="site-nav">
+  <a href="story.html" data-nav>Story</a>
+  <a href="calendar.html" data-nav>Calendar</a>
+  <a href="hub.html" data-nav>Hub</a>
+  <button class="day-night-toggle" data-day-night-toggle aria-label="昼夜を切り替える">
+    <span class="icon">☀️</span><span class="track"><span class="thumb"></span></span><span class="icon">🌙</span>
+  </button>
+  <button class="rain-toggle" data-rain-toggle aria-label="雨を降らせる">☔</button>
+</nav>
+
+<div class="theater-header">
+  <p class="eyebrow reveal">Theater</p>
+  <h1 class="section-title reveal">展示室</h1>
+  <p class="note reveal">ダンスや面白い瞬間の動画を集めた、二人だけの上映室です。</p>
+</div>
+
+<div class="theater-grid" id="theater-grid"></div>
+
+<!-- 再生モーダル -->
+<div class="video-modal-backdrop" id="video-modal-backdrop">
+  <div class="video-modal">
+    <button class="video-modal-close" id="video-modal-close" aria-label="閉じる">✕</button>
+    <div class="video-modal-player" id="video-modal-player"></div>
+    <div class="video-modal-caption">
+      <p class="v-title" id="modal-v-title"></p>
+      <p class="v-date" id="modal-v-date"></p>
+      <p class="v-comment" id="modal-v-comment"></p>
+    </div>
+  </div>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/effects.js"></script>
+<script src="assets/transition.js"></script>
+<script src="assets/concierge.js"></script>
+<script>
+  protectPage();
+  wireNavLinks();
+
+  // ---- ヘッダー部分（動画カード以外の静的な要素）のふわっと表示 ----
+  const headerIo = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        headerIo.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.theater-header .reveal').forEach(el => headerIo.observe(el));
+
+  const gridEl = document.getElementById('theater-grid');
+
+  function youtubeThumb(id){
+    return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  }
+  function formatDate(dateStr){
+    return (dateStr || '').replaceAll('-', '.');
+  }
+
+  async function loadVideos(){
+    try {
+      const res = await fetch('content/videos.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      return Array.isArray(data.videos) ? data.videos : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function renderGrid(videos){
+    gridEl.innerHTML = '';
+    if (videos.length === 0){
+      gridEl.innerHTML = '<p class="empty-msg">まだ動画が登録されていません。content/videos.json に追加すると、ここに並びます。</p>';
+      return;
+    }
+    videos.forEach(v => {
+      const card = document.createElement('div');
+      card.className = 'video-card reveal';
+      const thumbHtml = v.type === 'youtube'
+        ? `<img src="${youtubeThumb(v.src)}" alt=""><span class="play-mark">▶</span>`
+        : `<span class="play-mark">▶</span>`;
+      card.innerHTML = `
+        <div class="video-thumb">${thumbHtml}</div>
+        <div class="video-info">
+          <p class="v-title">${v.title || ''}</p>
+          <p class="v-date">${formatDate(v.date)}</p>
+          ${v.comment ? `<p class="v-comment">${v.comment}</p>` : ''}
+        </div>
+      `;
+      card.addEventListener('click', () => openModal(v));
+      gridEl.appendChild(card);
+
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+        });
+      }, { threshold: 0.15 });
+      io.observe(card);
+    });
+  }
+
+  const backdrop = document.getElementById('video-modal-backdrop');
+  const playerEl = document.getElementById('video-modal-player');
+
+  function openModal(v){
+    if (v.type === 'youtube'){
+      playerEl.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.src}?rel=0" title="${v.title || ''}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    } else {
+      playerEl.innerHTML = `<video src="${v.src}" controls playsinline></video>`;
+    }
+    document.getElementById('modal-v-title').textContent = v.title || '';
+    document.getElementById('modal-v-date').textContent = formatDate(v.date);
+    document.getElementById('modal-v-comment').textContent = v.comment || '';
+    backdrop.classList.add('is-open');
+  }
+  function closeModal(){
+    backdrop.classList.remove('is-open');
+    playerEl.innerHTML = ''; // 再生を止める
+  }
+  document.getElementById('video-modal-close').addEventListener('click', closeModal);
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  (async () => {
+    const videos = await loadVideos();
+    renderGrid(videos);
+  })();
+</script>
+</body>
+</html>

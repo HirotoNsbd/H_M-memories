@@ -165,6 +165,14 @@
   .footer-anniv{ font-family:var(--font-jp-serif); font-size:clamp(1.3rem, 4vw, 1.8rem); color:var(--gold-soft); }
   .footer-heart{ color:var(--rose); margin:0 0.3em; }
   .footer-sub{ margin-top:0.6em; font-family:var(--font-en); font-style:italic; color:var(--text-dim); letter-spacing:0.08em; }
+  .footer-sub-row{ display:flex; align-items:center; justify-content:center; gap:8px; }
+  .secret-mark-btn{
+    background:none; border:none; padding:2px 6px; cursor:pointer;
+    font-family:var(--font-en); font-style:italic; font-size:0.82rem;
+    color:#7a8fae; /* サイトの配色から少し浮いた、不自然な青灰色 */
+    opacity:0.7;
+  }
+  .secret-mark-btn:hover{ opacity:1; }
 
   /* ---- BGMトグル ---- */
   .bgm-toggle{
@@ -357,8 +365,8 @@
 
 <section class="hero">
   <p class="eyebrow">Our Story</p>
-  <h1 class="hero-names">Hiroto<span class="x">×</span>○○</h1>
-  <p class="hero-since" id="since-label">Since 2025.10.04</p>
+  <h1 class="hero-names">Hiroto<span class="x">×</span>Mituki</h1>
+  <p class="hero-since" id="since-label">Since 2024.10.04</p>
   <div class="hero-line"></div>
   <p class="scroll-cue">Scroll ↓</p>
 </section>
@@ -378,7 +386,7 @@
     <div class="reveal"><div class="counter-num" id="c-hours">0</div><div class="counter-label">Hours</div></div>
     <div class="reveal"><div class="counter-num" id="c-mins">0</div><div class="counter-label">Minutes</div></div>
   </div>
-  <div class="seal-emblem reveal">♡</div>
+  <div class="seal-emblem reveal">💗</div>
 </section>
 
 <section class="map-section" id="section-places">
@@ -394,18 +402,18 @@
                C100,270 60,230 80,190 C40,180 30,140 60,120 Z"
             fill="#1c2233" stroke="var(--line)" stroke-width="1"/>
       <g class="map-pin"><circle cx="300" cy="90" r="7"/><text x="313" y="94">ディズニーランド</text></g>
-      <g class="map-pin"><circle cx="230" cy="150" r="7"/><text x="243" y="154">高尾</text></g>
-      <g class="map-pin"><circle cx="330" cy="220" r="7"/><text x="343" y="224">京都</text></g>
-      <g class="map-pin"><circle cx="150" cy="240" r="7"/><text x="163" y="244">福岡</text></g>
+      <g class="map-pin"><circle cx="230" cy="150" r="7"/><text x="243" y="154">横浜</text></g>
+      <g class="map-pin"><circle cx="330" cy="220" r="7"/><text x="343" y="224">鎌倉</text></g>
+      <g class="map-pin"><circle cx="150" cy="240" r="7"/><text x="163" y="244">よみうりランド</text></g>
     </svg>
   </div>
-  <p class="map-note reveal">※ 実際の地図ではなく、旅の記録を示すイラストです。場所は story.html 内の SVG を編集すると変更できます。</p>
+  <p class="map-note reveal">※ 実際の地図ではなく、旅の記録を示すイラストです。</p>
 </section>
 
 <section class="letter-section" id="section-letter">
   <div class="reveal">
     <p class="eyebrow">A Letter</p>
-    <h2 class="section-title">きみへ</h2>
+    <h2 class="section-title">みつきへ</h2>
   </div>
   <button class="envelope reveal" id="envelope-btn" aria-expanded="false" aria-controls="letter-paper">
     <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
@@ -419,15 +427,19 @@
   <p class="envelope-hint reveal">— タップして開く —</p>
   <div class="letter-paper" id="letter-paper">
     <p>いつも隣で笑っていてくれてありがとう。</p>
-    <p>何気ない日も、特別な日も、全部きみと一緒だったから覚えていられる。</p>
+    <p>何気ない日も、特別な日も、全部みつきと一緒だったからいい思い出として覚えれてる。</p>
     <p>これからも、二人らしいペースで、たくさんの「初めて」を重ねていけたら嬉しいです。</p>
+    <p>いつもありがとう。そして大好きだよみつきちゃん！！！</p>
     <p class="letter-sign">— Hiroto</p>
   </div>
 </section>
 
 <footer class="footer">
-  <p class="footer-anniv reveal">Happy 1st Anniversary<span class="footer-heart">❤</span></p>
-  <p class="footer-sub reveal">To be continued...</p>
+  <p class="footer-anniv reveal">Happy 2nd Anniversary<span class="footer-heart">❤</span></p>
+  <p class="footer-sub-row reveal">
+    <span class="footer-sub">To be continued...</span>
+    <button class="secret-mark-btn" id="secret-mark" aria-label="?">?</button>
+  </p>
 </footer>
 
 <div class="footer-add-link reveal">
@@ -441,7 +453,7 @@
 <!-- 実際に曲を流したい場合は下の audio タグの src を自分の音源ファイルに差し替えてください。
      著作権の都合上、既定では音源を用意していません（フリー音源 or 自作音源を推奨）。 -->
 <audio id="bgm-audio" loop preload="none">
-  <!-- <source src="your-song.mp3" type="audio/mpeg"> -->
+  <source src="Espresso - Sabrina Carpenter.mp3" type="audio/mpeg">
 </audio>
 
 <script src="assets/auth.js"></script>
@@ -664,6 +676,24 @@
 
   const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   initScrollSpy('scrollspy-nav');
+
+  // ==================================================================
+  // ちいさなイースターエッグ：フッターの「To be continued...」の横にある
+  // 場違いな「?」マークをクリックすると、隠しページ（制作の記録動画）に移動する。
+  // ==================================================================
+  (function initSecretMark(){
+    const mark = document.getElementById('secret-mark');
+    if (!mark) return;
+    mark.addEventListener('click', () => {
+      const params = new URLSearchParams(location.hash.slice(1));
+      const url = 'vlog.html#' + params.toString();
+      if (typeof pageTransition === 'function'){
+        pageTransition(url, { label: '...' });
+      } else {
+        location.href = url;
+      }
+    });
+  })();
 </script>
 </body>
 </html>
