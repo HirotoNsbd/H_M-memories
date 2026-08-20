@@ -136,6 +136,18 @@
         "photos/story/HBD-26.jpeg"
       ],
       "showInStory": true
+    },
+    {
+      "icon": "🏰",
+      "date": "2026-08-06",
+      "title": "読売ランド",
+      "comment": "急に決まった遊園地は楽しかった！",
+      "showInStory": false,
+      "photos": [
+        "photos/2026-08-06-1787223348139-0-IMG_0729.jpeg",
+        "photos/2026-08-06-1787223351242-1-IMG_0734.jpeg",
+        "photos/2026-08-06-1787223354819-2-IMG_0762.jpeg"
+      ]
     }
   ]
 }
