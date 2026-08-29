@@ -1,6 +1,14 @@
 {
   "videos": [
     {
+      "id": "normal-day-3",
+      "title": "深大寺のだるまに目入れ👀",
+      "date": "2026-08-26",
+      "type": "youtube",
+      "src": "hb4iH2YkaRU",
+      "comment": "大吉な彼氏と小吉で残念な彼女"
+    },
+    {
       "id": "nomal-day-1",
       "title": "とある日のドンキホーテ",
       "date": "2026-08-04",
